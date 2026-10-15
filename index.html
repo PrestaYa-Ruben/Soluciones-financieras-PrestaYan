@@ -15587,6 +15587,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
 
     const tmp = document.createElement('div');
     tmp.innerHTML = contenidoHTML;
+    limpiarNombresClientesEnDocumento(tmp); // NUEVO: a pedido — en el documento compartido sale el nombre sin los números del inicio
     const palabras = [];
     extraerPalabrasConFormatoDoc(tmp, { bold:false, size:14 }, palabras);
 
@@ -16087,7 +16088,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     let y = PAD;
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.fillStyle = '#0A0D14'; ctx.font = '800 21px ' + FUENTE;
-    ctx.fillText(datos.nombre, W / 2, y, W - PAD * 2);
+    ctx.fillText(nombreClienteParaCompartir(datos.nombre), W / 2, y, W - PAD * 2);
     y += 30;
     ctx.fillStyle = '#4A5363'; ctx.font = '600 15px ' + FUENTE;
     ctx.fillText('Fechas de pago', W / 2, y);
@@ -16131,7 +16132,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const canvas = generarCanvasFechasTorta(datosFechasTorta);
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1));
     if(!blob){ alert('No se pudo generar la imagen. Intenta de nuevo.'); return; }
-    const nombreBase = (datosFechasTorta.nombre || 'cliente').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+    const nombreBase = (nombreClienteParaCompartir(datosFechasTorta.nombre) || 'cliente').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
     const nombreArchivo = 'fechas-de-pago-' + nombreBase + '-' + claveFechaConOffset(0) + '.png';
     const archivo = new File([blob], nombreArchivo, { type: 'image/png' });
     if(navigator.share && navigator.canShare && navigator.canShare({ files: [archivo] })){
@@ -17370,6 +17371,42 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
   // tarjeta en pantalla. escaparHtml() los convierte a su forma segura
   // antes de insertarlos — no cambia lo que el usuario ve, solo evita
   // que un nombre o nota con esos caracteres deforme la tarjeta.
+  // ==========================================================
+  // NUEVO (a pedido): NOMBRE DEL CLIENTE PARA COMPARTIR.
+  // Si el cliente se guardó con números al inicio (ej. "31-10 Juan Pablo
+  // Alvarez"), dentro de la app se sigue viendo así, pero en todo lo que
+  // se comparte (comprobantes, recibos, recordatorios, imágenes del
+  // crédito, mensajes de WhatsApp y documentos) sale solo "Juan Pablo
+  // Alvarez". Solo quita números y separadores (- / . _ , : # |) del
+  // INICIO; los números en medio o al final del nombre no se tocan. El
+  // nombre guardado nunca se modifica.
+  // ==========================================================
+  function nombreClienteParaCompartir(nombre){
+    const original = String(nombre == null ? '' : nombre).trim();
+    const limpio = original.replace(/^\d[\d\s\-\/._,:#|]*/, '').trim();
+    return limpio || original; // si el nombre fuera solo números, se deja como está
+  }
+  // En Documentos el texto se escribe a mano: si ahí aparece el nombre
+  // completo de un cliente guardado con números, se cambia por su nombre
+  // limpio solo en la imagen que se comparte (el documento guardado no cambia).
+  function limpiarNombresClientesEnDocumento(contenedor){
+    let reemplazos = [];
+    try{
+      reemplazos = (typeof clientesGuardados !== 'undefined' ? clientesGuardados : [])
+        .map(c => ({ completo: String((c && c.nombre) || '').trim(), limpio: nombreClienteParaCompartir(c && c.nombre) }))
+        .filter(r => r.completo && r.completo !== r.limpio)
+        .sort((a, b) => b.completo.length - a.completo.length); // primero los más largos
+    }catch(err){ return; }
+    if(reemplazos.length === 0) return;
+    const recorrido = document.createTreeWalker(contenedor, NodeFilter.SHOW_TEXT);
+    let nodo;
+    while((nodo = recorrido.nextNode())){
+      let texto = nodo.nodeValue;
+      reemplazos.forEach(r => { if(texto.includes(r.completo)) texto = texto.split(r.completo).join(r.limpio); });
+      if(texto !== nodo.nodeValue) nodo.nodeValue = texto;
+    }
+  }
+
   function escaparHtml(texto){
     return String(texto == null ? '' : texto)
       .replace(/&/g, '&amp;')
@@ -18396,7 +18433,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     // ---- 1) Calcular el alto total del canvas ANTES de dibujar ----
     const altoHeader = 105;
     const filasInfo = [
-      ['Cliente', cliente ? cliente.nombre : '', 'Cédula', (cliente && cliente.documento) ? cliente.documento : '—'],
+      ['Cliente', cliente ? nombreClienteParaCompartir(cliente.nombre) : '', 'Cédula', (cliente && cliente.documento) ? cliente.documento : '—'],
       ['Monto del préstamo', formatearPesos(prestamo.valor), 'Fecha del préstamo', formatearFechaCorta(new Date(prestamo.fecha + 'T00:00:00'))],
       ['Cuotas', prestamo.cuotas + ' × ' + formatearPesos(cuotaRealPrestamo(prestamo)), 'Modalidad de pago', NOMBRES_FRECUENCIA[prestamo.frecuencia] || prestamo.frecuencia]
     ];
@@ -18613,7 +18650,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
 
     const altoHeader = 105;
     const filasInfo = [
-      ['Cliente', cliente ? cliente.nombre : '', 'Monto del préstamo', formatearPesos(prestamo.valor)],
+      ['Cliente', cliente ? nombreClienteParaCompartir(cliente.nombre) : '', 'Monto del préstamo', formatearPesos(prestamo.valor)],
       ['Cuotas', prestamo.cuotas + ' × ' + formatearPesos(cuotaRealPrestamo(prestamo)), 'Modalidad de pago', NOMBRES_FRECUENCIA[prestamo.frecuencia] || prestamo.frecuencia]
     ];
     const altoFilaInfo = 56;
@@ -18754,7 +18791,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const filas = [
       'Resumen de crédito - ' + obtenerNombreNegocio(),
       'Código: ' + (prestamo.codigo || ''),
-      'Cliente: ' + (cliente ? cliente.nombre : ''),
+      'Cliente: ' + (cliente ? nombreClienteParaCompartir(cliente.nombre) : ''),
       'Valor del préstamo: ' + formatearPesos(prestamo.valor),
       'Interés: ' + (Number(prestamo.tasa) || 0).toFixed(2) + '%',
       'N.° de cuotas: ' + prestamo.cuotas,
@@ -18785,7 +18822,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     // dibujarIconoComprobante() e iconoParaEtiquetaComprobante() (mismas
     // funciones compartidas que usa el Comprobante de Pago). Ningún
     // cálculo/dato cambió, solo el dibujo.
-    const nombreCliente = cliente ? cliente.nombre : '';
+    const nombreCliente = cliente ? nombreClienteParaCompartir(cliente.nombre) : '';
     const filas = [
       ['Cliente', nombreCliente],
       // CAMBIO: a pedido — nuevas etiquetas. El 3.er elemento conserva la
@@ -19412,7 +19449,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const FUENTE = '"Helvetica Neue", Arial, sans-serif';
 
     const filasCuerpo = [
-      ['Cliente', cliente ? cliente.nombre : '—'],
+      ['Cliente', cliente ? nombreClienteParaCompartir(cliente.nombre) : '—'],
       ['Monto solicitado', formatearPesos(prestamo.valor)],
       ['Frecuencia de pago', nombresFrecuencia[prestamo.frecuencia] || prestamo.frecuencia],
       // "Número de cuotas": total de cuotas + valor de cada una — ej. "2 cuotas de $55.000"
@@ -23151,7 +23188,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     // Nombre del cliente
     ctx.fillStyle = '#151A23';
     ctx.font = 'bold 27px Arial, sans-serif';
-    ctx.fillText(cliente.nombre, padding, yNombre);
+    ctx.fillText(nombreClienteParaCompartir(cliente.nombre), padding, yNombre);
 
     // Línea divisoria 2
     ctx.beginPath();
@@ -23805,7 +23842,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const montoAbonado = pagosCuota.reduce((s, p) => s + p.monto, 0);
     const metodo = ultimoPago ? (nombresMetodoPago[ultimoPago.metodoPago] || ultimoPago.metodoPago) : '—';
     const fechaTexto = ultimoPago ? formatearFechaCorta(new Date(ultimoPago.fecha)) : '—';
-    const nombreCliente = clienteEnDetalle ? clienteEnDetalle.nombre : '';
+    const nombreCliente = clienteEnDetalle ? nombreClienteParaCompartir(clienteEnDetalle.nombre) : '';
     // Un recargo por mora no es el pago de la cuota: el comprobante debe
     // decirlo explícitamente, no mostrar "Cuota N.° X ... Pagada" como si
     // esa cuota se hubiera saldado con este abono. (La mora nunca se
@@ -24769,7 +24806,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
 
     // Mismas filas, en el mismo orden, que ya arma abrirDetallePago() en pantalla
     const filas = [];
-    filas.push(['Cliente', clienteEnDetalle ? clienteEnDetalle.nombre : '—']);
+    filas.push(['Cliente', clienteEnDetalle ? nombreClienteParaCompartir(clienteEnDetalle.nombre) : '—']);
     filas.push(['Monto del préstamo', formatearPesos(prestamo.valor)]);
     filas.push(['Fecha del pago', formatearFechaCorta(new Date(pago.fecha))]);
     if(obtenerReciboMostrarCuota()){
@@ -25077,7 +25114,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const esAbono = pago.aplicarA === 'abono';
     let texto = (esRecargoMora ? 'Comprobante de Recargo - ' : 'Comprobante de pago - ') + obtenerNombreNegocio() + '\n' +
       (ocultarCodigoEnRecibos() ? '' : 'Préstamo: ' + (prestamo.codigo || '') + '\n') +
-      'Cliente: ' + (clienteEnDetalle ? clienteEnDetalle.nombre : '');
+      'Cliente: ' + (clienteEnDetalle ? nombreClienteParaCompartir(clienteEnDetalle.nombre) : '');
 
     // NUEVO: campos a incluir (Ajustes → Plantilla de recibo)
     if(esRecargoMora){
@@ -27119,7 +27156,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       alert('Este cliente no tiene un teléfono registrado.');
       return;
     }
-    const mensaje = 'Hola ' + cliente.nombre + ', te recordamos que tu cuota ' + cuota.numero + ' de ' + prestamo.cuotas +
+    const mensaje = 'Hola ' + nombreClienteParaCompartir(cliente.nombre) + ', te recordamos que tu cuota ' + cuota.numero + ' de ' + prestamo.cuotas +
       ' por ' + formatearPesos(cuota.total) + ' vence el ' + formatearFechaCorta(new Date(cuota.fechaISO)) + '. ¡Gracias por tu pago puntual!';
     window.open('https://wa.me/' + telefono + '?text=' + encodeURIComponent(mensaje), '_blank');
   });
@@ -27357,7 +27394,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     let y = cardY + alturaHeader + 40;
     ctx.fillStyle = '#151A23';
     ctx.font = 'bold 22px Arial, sans-serif';
-    ctx.fillText(cliente.nombre, cardX + 26, y);
+    ctx.fillText(nombreClienteParaCompartir(cliente.nombre), cardX + 26, y);
     y += 30;
 
     filas.forEach(([label, valor])=>{
@@ -27410,7 +27447,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       const archivo = new File([blob], nombreArchivo, { type: 'image/png' });
 
       if(navigator.share && navigator.canShare && navigator.canShare({ files: [archivo] })){
-        try{ await navigator.share({ files: [archivo], title: 'Recibo de ' + cliente.nombre }); }
+        try{ await navigator.share({ files: [archivo], title: 'Recibo de ' + nombreClienteParaCompartir(cliente.nombre) }); }
         catch(err){ /* cancelado por el usuario, no es un error */ }
       }else{
         // Respaldo cuando el navegador no soporta compartir archivos:
