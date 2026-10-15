@@ -5159,6 +5159,8 @@ body:not(.modo-oscuro) #resumen-activos-cliente-overlay{ --success:#0B8F45; --wa
 .client-row .client-row-proxima-cuota svg{ width:14px; height:14px; stroke:currentColor; flex-shrink:0; }
 .client-row .client-row-proxima-cuota span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
 .client-row .client-row-proxima-cuota strong{ font-weight:800; }
+.client-row .client-row-proxima-cuota{ cursor:pointer; transition:transform .1s ease, filter .1s ease; } /* NUEVO: tocable — abre Editar fecha */
+.client-row .client-row-proxima-cuota:active{ transform:scale(0.96); filter:brightness(0.93); }
 .client-row .client-row-proxima-cuota.hoy{ background:rgba(217,119,6,0.13); color:#B45309; }
 .client-row .client-row-proxima-cuota.vencida{ background:rgba(198,47,59,0.11); color:#B4232A; }
 body.modo-oscuro .client-row .client-row-proxima-cuota{ background:rgba(255,255,255,0.08); color:#C9D6FF; }
@@ -16256,7 +16258,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
         (p.plan || []).forEach(c => {
           if(!c.fechaISO || estaCuotaPagada(p, c.numero)) return;
           const fecha = new Date(c.fechaISO);
-          if(!proxima || fecha < proxima.fecha) proxima = { fecha, vencida: cuotaVencida(p, c) };
+          if(!proxima || fecha < proxima.fecha) proxima = { fecha, vencida: cuotaVencida(p, c), prestamoId: p.id, numeroCuota: c.numero };
         });
       });
       if(proxima){
@@ -16276,6 +16278,15 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
         fechaFuerte.textContent = (esHoy && !proxima.vencida) ? 'hoy' : fechaTextoProxima;
         spanProxima.appendChild(fechaFuerte);
         lineaProximaCuota = lineaProxima; // se agrega al final, debajo de la etiqueta de ruta (como en la referencia)
+        // NUEVO (a pedido): tocar la píldora abre "Editar fecha de vencimiento"
+        // de esa cuota (la misma pantalla de Detalle del Préstamo), sin abrir
+        // el detalle del cliente.
+        lineaProxima.setAttribute('role', 'button');
+        lineaProxima.setAttribute('aria-label', 'Editar fecha de la próxima cuota');
+        lineaProxima.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          abrirEditarFechaCuotaDesdeClientes(proxima.prestamoId, proxima.numeroCuota);
+        });
       }
     }
 
@@ -25288,9 +25299,40 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
 
   function cerrarEditarFechaCuota(){
     screenEditarFechaCuota.style.display = 'none';
+    // NUEVO: si se abrió desde la píldora "Próxima cuota" (lista de Clientes
+    // o Búsqueda), vuelve a esa misma pantalla, en la misma posición, con
+    // las tarjetas actualizadas.
+    if(origenEditarFechaCuota){
+      const origen = origenEditarFechaCuota;
+      origenEditarFechaCuota = null;
+      origen.pantallas.forEach(el => { el.style.display = 'block'; });
+      bottomNav.style.display = origen.nav;
+      try{ renderizarClientes(clientesFiltrados()); }catch(err){}
+      try{ if(document.getElementById('screen-busqueda').style.display !== 'none') renderizarResultadosBusqueda(); }catch(err){}
+      window.scrollTo(0, origen.scroll);
+      return;
+    }
     screenDetallePrestamo.style.display = 'block';
     bottomNav.style.display = 'none';
     window.scrollTo(0,0);
+  }
+  // NUEVO (a pedido): abre "Editar fecha de vencimiento" desde la píldora
+  // "Próxima cuota" de la tarjeta del cliente. Reutiliza tal cual
+  // abrirEditarFechaCuota() y el mismo guardado; solo recuerda de dónde
+  // se vino para regresar ahí al cerrar o guardar.
+  let origenEditarFechaCuota = null;
+  function abrirEditarFechaCuotaDesdeClientes(prestamoId, numeroCuota){
+    const prestamo = prestamosGuardados.find(p => p.id === prestamoId);
+    const cuota = prestamo && (prestamo.plan || []).find(c => c.numero === numeroCuota);
+    if(!prestamo || !cuota) return;
+    origenEditarFechaCuota = {
+      pantallas: [...document.querySelectorAll('.app')].filter(el => el.style.display !== 'none' && getComputedStyle(el).display !== 'none'),
+      nav: bottomNav.style.display,
+      scroll: window.scrollY
+    };
+    abrirEditarFechaCuota(prestamo, cuota);
+    origenEditarFechaCuota.pantallas.forEach(el => { if(el !== screenEditarFechaCuota) el.style.display = 'none'; });
+    origenEditarFechaCuota.pantallas = origenEditarFechaCuota.pantallas.filter(el => el !== screenEditarFechaCuota);
   }
   btnCerrarEditarFechaCuota.addEventListener('click', cerrarEditarFechaCuota);
   document.getElementById('form-editar-fecha-cuota').addEventListener('submit', (e)=> e.preventDefault());
@@ -25350,8 +25392,9 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     });
 
     guardarPrestamos(prestamosGuardados);
+    const veniaDeClientes = !!origenEditarFechaCuota; // NUEVO
     cerrarEditarFechaCuota();
-    refrescarDetallePrestamo();
+    if(!veniaDeClientes) refrescarDetallePrestamo();
   });
 
   // ---------- Compartir cronograma completo ----------
