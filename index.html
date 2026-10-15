@@ -5138,11 +5138,32 @@ body:not(.modo-oscuro) #resumen-activos-cliente-overlay{ --success:#0B8F45; --wa
   font-weight:400;
 }
 .client-row .info .phone svg{ width:14px; height:14px; stroke:currentColor; flex-shrink:0; }
-.client-row .info .client-row-proxima-cuota{ font-size:13px; margin-top:1px; } /* NUEVO: fecha de la próxima cuota */
-.client-row .info .client-row-proxima-cuota.hoy{ color:#D97706; font-weight:600; }
-.client-row .info .client-row-proxima-cuota.vencida{ color:#C62F3B; font-weight:600; }
-body.modo-oscuro .client-row .info .client-row-proxima-cuota.hoy{ color:#F5A524; }
-body.modo-oscuro .client-row .info .client-row-proxima-cuota.vencida{ color:#FF6B76; }
+/* La tarjeta con "Próxima cuota" pasa a cuadrícula: avatar a la izquierda
+   (centrado en toda la altura), info + columna derecha arriba y la píldora
+   en una fila propia al pie, debajo de la ruta — como en la referencia. */
+.client-row.client-row-con-proxima{ display:grid; grid-template-columns:auto minmax(0,1fr) auto; column-gap:12px; row-gap:0; align-items:center; }
+.client-row.client-row-con-proxima > .avatar-columna{ grid-column:1; grid-row:1 / span 2; align-self:center; }
+.client-row.client-row-con-proxima > .info{ grid-column:2; grid-row:1; align-self:stretch; }
+.client-row.client-row-con-proxima > .client-row-lateral{ grid-column:3; grid-row:1; }
+.client-row.client-row-con-proxima > .client-row-proxima-cuota{ grid-column:2 / span 2; grid-row:2; justify-self:start; }
+@media (max-width:370px){ .client-row.client-row-con-proxima{ column-gap:9px; } }
+/* NUEVO (a pedido, con imagen de referencia): "Próxima cuota" como píldora
+   suave, debajo de la etiqueta de ruta: ícono de reloj, etiqueta en azul y
+   la fecha en negrita (ej. "Próxima cuota: dom 18 oct"). */
+.client-row .client-row-proxima-cuota{
+  display:inline-flex; align-items:center; gap:6px;
+  max-width:100%; margin-top:6px; padding:4px 10px 4px 8px;
+  border-radius:9px; background:rgba(31,47,104,0.08);
+  color:#1F2F68; font-size:12.5px; font-weight:600; line-height:1.25;
+}
+.client-row .client-row-proxima-cuota svg{ width:14px; height:14px; stroke:currentColor; flex-shrink:0; }
+.client-row .client-row-proxima-cuota span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.client-row .client-row-proxima-cuota strong{ font-weight:800; }
+.client-row .client-row-proxima-cuota.hoy{ background:rgba(217,119,6,0.13); color:#B45309; }
+.client-row .client-row-proxima-cuota.vencida{ background:rgba(198,47,59,0.11); color:#B4232A; }
+body.modo-oscuro .client-row .client-row-proxima-cuota{ background:rgba(255,255,255,0.08); color:#C9D6FF; }
+body.modo-oscuro .client-row .client-row-proxima-cuota.hoy{ background:rgba(245,165,36,0.16); color:#F5A524; }
+body.modo-oscuro .client-row .client-row-proxima-cuota.vencida{ background:rgba(255,107,118,0.15); color:#FF6B76; }
 .client-row .info .saldo-cliente{
   font-size:13px;
   color:var(--primary);
@@ -16228,6 +16249,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     // próxima entre los préstamos activos del cliente (mismos datos de
     // siempre: plan + estaCuotaPagada + cuotaVencida, sin cálculos nuevos).
     // Si esa cuota ya venció se muestra en rojo; si es hoy, en naranja.
+    let lineaProximaCuota = null;
     if(prestamosActivosCliente.length > 0){
       let proxima = null;
       prestamosActivosCliente.forEach(p => {
@@ -16240,13 +16262,20 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       if(proxima){
         const hoy = new Date();
         const esHoy = proxima.fecha.getFullYear() === hoy.getFullYear() && proxima.fecha.getMonth() === hoy.getMonth() && proxima.fecha.getDate() === hoy.getDate();
+        // Formato de la referencia: día de la semana corto + día + mes en minúscula (ej. "dom 18 oct"); el año solo si no es el actual
+        const DIAS_CORTOS = ['dom','lun','mar','mié','jue','vie','sáb'];
+        const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+        const fechaTextoProxima = DIAS_CORTOS[proxima.fecha.getDay()] + ' ' + proxima.fecha.getDate() + ' ' + MESES_CORTOS[proxima.fecha.getMonth()] +
+          (proxima.fecha.getFullYear() !== hoy.getFullYear() ? ' ' + proxima.fecha.getFullYear() : '');
         const lineaProxima = document.createElement('div');
-        lineaProxima.className = 'phone client-row-proxima-cuota' + (proxima.vencida ? ' vencida' : (esHoy ? ' hoy' : ''));
-        lineaProxima.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span></span>';
-        // Fecha corta sin el año cuando es del año en curso (ej. "19 Oct"), para que quepa en teléfonos angostos
-        const fechaTextoProxima = formatearFechaCorta(proxima.fecha).replace(new RegExp('\\s' + hoy.getFullYear() + '$'), '');
-        lineaProxima.querySelector('span').textContent = (proxima.vencida ? 'Vencida: ' : 'Próxima: ') + (esHoy && !proxima.vencida ? 'Hoy' : fechaTextoProxima);
-        info.appendChild(lineaProxima);
+        lineaProxima.className = 'client-row-proxima-cuota' + (proxima.vencida ? ' vencida' : (esHoy ? ' hoy' : ''));
+        lineaProxima.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg><span></span>';
+        const spanProxima = lineaProxima.querySelector('span');
+        spanProxima.appendChild(document.createTextNode(proxima.vencida ? 'Cuota vencida: ' : 'Próxima cuota: '));
+        const fechaFuerte = document.createElement('strong');
+        fechaFuerte.textContent = (esHoy && !proxima.vencida) ? 'hoy' : fechaTextoProxima;
+        spanProxima.appendChild(fechaFuerte);
+        lineaProximaCuota = lineaProxima; // se agrega al final, debajo de la etiqueta de ruta (como en la referencia)
       }
     }
 
@@ -16263,6 +16292,8 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       etiquetaRuta.style.background = colorRutaEtiqueta + '14';
       info.appendChild(etiquetaRuta);
     }
+    // NUEVO: la píldora va en su propia fila al pie de la tarjeta (ver .client-row-con-proxima en CSS)
+    if(lineaProximaCuota){ card._proximaCuotaCliente = lineaProximaCuota; card.classList.add('client-row-con-proxima'); }
 
     if(prestamosActivosCliente.length > 0){
       const badge = document.createElement('div');
@@ -16425,6 +16456,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     // recordatorio sigue disponible desde la ficha del cliente y desde la
     // tarjeta de cada crédito.
     if(card._lateralCliente) card.appendChild(card._lateralCliente);
+    if(card._proximaCuotaCliente) card.appendChild(card._proximaCuotaCliente); // NUEVO: fila "Próxima cuota"
 
     // Al tocar la tarjeta se abre el detalle completo del cliente
     card.addEventListener('click', ()=> abrirDetalleCliente(cliente));
