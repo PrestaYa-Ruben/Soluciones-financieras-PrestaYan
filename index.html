@@ -2054,6 +2054,21 @@ body.modo-oscuro #screen-nuevo-prestamo{
   display:flex; flex-direction:column; gap:18px;
 }
 #screen-nuevo-prestamo .np-fila-2{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+/* NUEVO (a pedido): selector "Por cuotas / Solo intereses" */
+#screen-nuevo-prestamo .np-tipo-prestamo{ display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; margin:0 0 10px; border-radius:12px; background:var(--np-campo); border:1px solid var(--np-card-borde); }
+#screen-nuevo-prestamo .np-tipo-opcion{ min-height:42px; border-radius:9px; font-size:14.5px; font-weight:600; color:var(--text-secondary); background:transparent; transition:background .15s ease, color .15s ease; }
+#screen-nuevo-prestamo .np-tipo-opcion.activo{ background:var(--np-teal); color:#FFFFFF; box-shadow:0 2px 6px rgba(0,35,89,0.25); }
+body.modo-oscuro #screen-nuevo-prestamo .np-tipo-opcion.activo{ background:#002359; }
+#screen-nuevo-prestamo.modo-solo-interes .np-campo-cuotas{ display:none; }
+#screen-nuevo-prestamo.modo-solo-interes .np-fila-2{ grid-template-columns:minmax(0,1fr); }
+#screen-nuevo-prestamo.modo-solo-interes #btn-swap-interes,
+#screen-nuevo-prestamo.modo-solo-interes .np-mini-cuota-deseada{ display:none; }
+#screen-nuevo-prestamo.modo-solo-interes .interes-swap-row{ grid-template-columns:minmax(0,1fr); }
+#screen-nuevo-prestamo .np-solo-interes-info{ margin-top:10px; padding:12px 14px; border-radius:12px; background:var(--np-card); border:1px solid var(--np-card-borde); box-shadow:var(--np-card-sombra); font-size:13.5px; line-height:1.45; color:var(--text-secondary); }
+#screen-nuevo-prestamo .np-solo-interes-info strong{ color:var(--np-valor); font-weight:800; }
+#screen-nuevo-prestamo .np-solo-interes-info .np-si-cuota{ display:block; font-size:20px; font-weight:800; color:#1E9E3E; margin:2px 0 4px; }
+body.modo-oscuro #screen-nuevo-prestamo .np-solo-interes-info .np-si-cuota{ color:#4CC93F; }
+#screen-nuevo-prestamo .np-solo-interes-nota{ font-size:12.5px; color:var(--text-secondary); padding:4px 2px 0; line-height:1.45; }
 
 /* Cliente */
 #screen-nuevo-prestamo .np-cliente{
@@ -7982,6 +7997,14 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
 
     <div class="np-seccion">
       <div class="np-titulo">Detalles del Préstamo</div>
+      <!-- NUEVO (a pedido): tipo de préstamo. "Solo intereses": el cliente
+           paga solo el interés en cada cuota, sin plazo; el capital lo
+           devuelve cuando pueda (todo o en abonos) y, al abonar capital, el
+           interés de las cuotas siguientes baja. -->
+      <div class="np-tipo-prestamo" role="radiogroup" aria-label="Tipo de préstamo">
+        <button type="button" class="np-tipo-opcion activo" data-tipo="cuotas" role="radio" aria-checked="true">Por cuotas</button>
+        <button type="button" class="np-tipo-opcion" data-tipo="solo_interes" role="radio" aria-checked="false">Solo intereses</button>
+      </div>
       <div class="np-card">
         <div class="form-field np-campo np-campo-monto">
           <label class="field-label" for="input-valor-prestamo">Monto Solicitado</label>
@@ -7992,7 +8015,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
           </div>
         </div>
         <div class="np-fila-2">
-          <div class="form-field np-campo">
+          <div class="form-field np-campo np-campo-cuotas">
             <label class="field-label" for="input-cuotas-prestamo">Número de Cuotas</label>
             <div class="field-with-icon">
               <input class="field-input" id="input-cuotas-prestamo" type="text" inputmode="numeric" placeholder="Escribe" required>
@@ -8034,6 +8057,8 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
           </div>
         </div>
       </div>
+      <!-- NUEVO: resumen del préstamo a solo intereses (solo visible en ese modo) -->
+      <div class="np-solo-interes-info" id="np-solo-interes-info" style="display:none;"></div>
     </div>
 
     <div class="np-seccion">
@@ -8122,6 +8147,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     <div class="simulation-section" id="simulacion-section" style="display:none;">
       <div class="simulation-title">Plan de Pagos</div>
       <div id="plan-pagos-lista"></div>
+      <div class="np-solo-interes-nota" id="np-solo-interes-nota" style="display:none;"></div>
     </div>
 
     <button type="button" class="primary-button btn-guardar-prestamo" id="btn-guardar-prestamo">
@@ -16342,9 +16368,11 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       const lateral = document.createElement('div');
       lateral.className = 'client-row-lateral';
       const pctLateral = cuotasTotalSum > 0 ? Math.min(100, (cuotasPagadasTotal / cuotasTotalSum) * 100) : 0;
+      // NUEVO: préstamos a solo intereses no tienen un total de cuotas fijo
+      const soloInteresCliente = prestamosActivosCliente.every(p => p.soloInteres);
       lateral.innerHTML = `
-        <div class="crl-cuotas">${cuotasPagadasTotal} / ${cuotasTotalSum} Cuotas</div>
-        <div class="crl-barra"><div class="crl-barra-relleno" style="width:${pctLateral}%"></div></div>
+        <div class="crl-cuotas">${soloInteresCliente ? 'Solo interés' : cuotasPagadasTotal + ' / ' + cuotasTotalSum + ' Cuotas'}</div>
+        <div class="crl-barra"${soloInteresCliente ? ' style="visibility:hidden;"' : ''}><div class="crl-barra-relleno" style="width:${pctLateral}%"></div></div>
         <div class="crl-saldo-etiqueta">Saldo pendiente</div>
         <div class="crl-saldo-valor">${formatearPesos(saldoTotal)}</div>`;
       card._lateralCliente = lateral;
@@ -17279,6 +17307,8 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
   }
 
   function guardarPrestamos(lista){
+    // NUEVO: los préstamos a solo intereses se mantienen al día antes de guardar
+    try{ sincronizarListaSoloInteres(lista); }catch(err){}
     try{
       localStorage.setItem(PRESTAMOS_KEY, JSON.stringify(lista));
     }catch(err){
@@ -17823,9 +17853,179 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       return { ...cuota, fechaISO: fechaCuota.toISOString(), fechaTexto: formatearFechaCorta(fechaCuota) };
     });
   }
+  // ==========================================================
+  // NUEVO (a pedido): PRÉSTAMO A SOLO INTERESES — capa independiente.
+  // calcularPlanPagos() y sus fórmulas NO se tocaron.
+  //  - Cada cuota es solo interés: % del capital pendiente por cuota
+  //    (ej. 20% de $500.000 = $100.000), redondeado al mil superior como
+  //    el resto del sistema. Capital de cada cuota = $0.
+  //  - Sin plazo: el plan se va extendiendo solo, siempre hasta la próxima
+  //    cuota por venir (sincronizarPrestamoSoloInteres).
+  //  - El capital se paga cuando el cliente pueda, con pagos marcados
+  //    aplicarA:'capital' (capitalPagado). Si abona capital, las cuotas que
+  //    vencen después del abono (y aún no tienen pagos) cobran interés
+  //    sobre el capital que queda.
+  //  - totalAPagar = intereses generados + capital, así saldo pendiente y
+  //    cartera salen de las funciones de siempre.
+  // ==========================================================
+  function redondearMilSuperiorSoloInteres(x){ return Math.ceil(Math.round(x) / 1000) * 1000; }
+  function interesPorCuotaSoloInteres(capital, tasa){
+    return capital > 0.5 ? redondearMilSuperiorSoloInteres(capital * (tasa || 0) / 100) : 0;
+  }
+  // Fecha "de calendario" de la cuota de índice i (0 = primera), con la
+  // misma regla de frecuencia y de fechas manuales del formulario.
+  function fechaCuotaSoloInteres(fechaDesembolsoStr, frecuencia, f1, f2, i){
+    if(f1 && f2 && fechaSegundaCuotaEsValida(f1, f2)){
+      const base = new Date((i % 2 === 0 ? f1 : f2) + 'T00:00:00');
+      return fechaMismoDiaMesesDespues(base, Math.floor(i / 2));
+    }
+    const inicio = new Date((f1 || fechaDesembolsoStr) + 'T00:00:00');
+    const n = f1 ? i : i + 1;
+    if(frecuencia === 'diario') return new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + n);
+    if(frecuencia === 'semanal') return new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + n * 7);
+    if(frecuencia === 'quincenal') return new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + n * 15);
+    return fechaMismoDiaMesesDespues(inicio, n);
+  }
+  function pagosCapitalSoloInteres(prestamo){
+    return (prestamo.pagos || []).filter(p => p.aplicarA === 'capital');
+  }
+  function capitalPagadoSoloInteresHasta(pagosCapital, fechaLimite){
+    return pagosCapital.filter(p => !fechaLimite || new Date(p.fecha) <= fechaLimite).reduce((s, p) => s + (p.capitalPagado || 0), 0);
+  }
+  function capitalPendienteSoloInteres(prestamo){
+    return Math.max((prestamo.valor || 0) - capitalPagadoSoloInteresHasta(pagosCapitalSoloInteres(prestamo), null), 0);
+  }
+  function finDeHoySoloInteres(){ const d = new Date(); d.setHours(23, 59, 59, 999); return d; }
+  // Plan nuevo (formulario): cuotas hasta la próxima por venir (mínimo
+  // "minCuotas"), con el interés según el capital al inicio de cada período.
+  function generarPlanSoloInteres(valor, tasa, frecuencia, fechaStr, f1, f2, minCuotas, pagosCapital){
+    const plan = [];
+    const pagosCap = pagosCapital || [];
+    const finHoy = finDeHoySoloInteres();
+    for(let i = 0; i < 3000; i++){
+      const fecha = fechaCuotaSoloInteres(fechaStr, frecuencia, f1, f2, i);
+      const antesDelVencimiento = new Date(fecha.getTime() - 1); // capital abonado antes del día de la cuota
+      const interes = interesPorCuotaSoloInteres(valor - capitalPagadoSoloInteresHasta(pagosCap, antesDelVencimiento), tasa);
+      plan.push({ numero: i + 1, capital: 0, interes, total: interes, fechaISO: fecha.toISOString(), fechaTexto: formatearFechaCorta(fecha) });
+      if(plan.length >= (minCuotas || 1) && fecha > finHoy) break;
+    }
+    return plan;
+  }
+  // Mantiene al día un préstamo a solo intereses (se llama al guardar y al
+  // abrir la app): extiende el plan hasta la próxima cuota, recalcula el
+  // interés de las cuotas sin pagos según el capital pendiente y, si ya
+  // pagó todo el capital, quita las cuotas futuras sin pagos. Las cuotas
+  // con algún pago y las fechas que el usuario haya editado se respetan.
+  function sincronizarPrestamoSoloInteres(prestamo){
+    if(!prestamo || !prestamo.soloInteres || prestamo.estado === 'finalizado') return false;
+    const antes = JSON.stringify([prestamo.plan, prestamo.totalAPagar, prestamo.cuotas, prestamo.cuotaMostrada]);
+    const plan = (prestamo.plan || []).slice().sort((a, b) => a.numero - b.numero);
+    const pagosCap = pagosCapitalSoloInteres(prestamo);
+    const capitalPend = capitalPendienteSoloInteres(prestamo);
+    const tienePagos = c => pagosDeCuota(prestamo, c.numero).length > 0;
+    const f1 = prestamo.fechaPrimeraCuota || '', f2 = prestamo.fechaSegundaCuota || '';
+
+    if(capitalPend <= 0.5){
+      const fechaSaldo = pagosCap.length ? new Date(Math.max.apply(null, pagosCap.map(p => new Date(p.fecha).getTime()))) : new Date();
+      // (no se quita una cuota a la que esté atado algún pago, ej. el propio abono a capital)
+      const tieneCualquierPago = c => (prestamo.pagos || []).some(pg => pg.cuota === c.numero);
+      while(plan.length && !tieneCualquierPago(plan[plan.length - 1]) && new Date(plan[plan.length - 1].fechaISO) > fechaSaldo) plan.pop();
+    }else{
+      const finHoy = finDeHoySoloInteres();
+      // Si alguna fecha se editó a mano, las cuotas nuevas siguen ese corrimiento.
+      let corrimientoDias = 0;
+      if(plan.length){
+        const ultima = plan[plan.length - 1];
+        const teorica = fechaCuotaSoloInteres(prestamo.fecha, prestamo.frecuencia, f1, f2, plan.length - 1);
+        corrimientoDias = Math.round((new Date(ultima.fechaISO) - teorica) / 86400000);
+      }
+      let guard = 0;
+      // Siempre queda una próxima cuota de interés por pagar: se agregan
+      // cuotas mientras la última ya venció o ya está pagada (adelantada).
+      const ultimaPagada = ()=> plan.length && sumaAbonadaCuota(prestamo, plan[plan.length - 1].numero) >= (plan[plan.length - 1].total || 0) - 1 && (plan[plan.length - 1].total || 0) > 0;
+      while((!plan.length || new Date(plan[plan.length - 1].fechaISO) <= finHoy || ultimaPagada()) && guard++ < 3000){
+        const i = plan.length;
+        const base = fechaCuotaSoloInteres(prestamo.fecha, prestamo.frecuencia, f1, f2, i);
+        const fecha = new Date(base.getFullYear(), base.getMonth(), base.getDate() + corrimientoDias);
+        plan.push({ numero: (plan.length ? plan[plan.length - 1].numero : 0) + 1, capital: 0, interes: 0, total: 0, fechaISO: fecha.toISOString(), fechaTexto: formatearFechaCorta(fecha) });
+      }
+    }
+    // Interés de las cuotas que aún no tienen pagos: sobre el capital que
+    // quedaba pendiente antes del día de esa cuota (un abono a capital baja
+    // el interés desde la cuota siguiente a la fecha del abono).
+    plan.forEach((c)=>{
+      if(tienePagos(c)) return;
+      const antesDelVencimiento = new Date(new Date(c.fechaISO).getTime() - 1);
+      const interes = interesPorCuotaSoloInteres((prestamo.valor || 0) - capitalPagadoSoloInteresHasta(pagosCap, antesDelVencimiento), prestamo.tasa);
+      c.capital = 0; c.interes = interes; c.total = interes;
+    });
+    prestamo.plan = plan;
+    prestamo.cuotas = plan.length;
+    prestamo.totalAPagar = plan.reduce((s, c) => s + (c.total || 0), 0) + (prestamo.valor || 0);
+    const proxima = plan.find(c => !estaCuotaPagada(prestamo, c.numero));
+    prestamo.cuotaMostrada = proxima ? proxima.total : interesPorCuotaSoloInteres(capitalPend, prestamo.tasa);
+    return JSON.stringify([prestamo.plan, prestamo.totalAPagar, prestamo.cuotas, prestamo.cuotaMostrada]) !== antes;
+  }
+  // Saldado = capital pagado completo y todas sus cuotas de interés pagadas
+  // (o saldo en cero por descuentos).
+  function prestamoSoloInteresSaldado(prestamo){
+    if(!prestamo || !prestamo.soloInteres) return false;
+    if(saldoPendientePrestamo(prestamo) <= 0.5) return true;
+    return capitalPendienteSoloInteres(prestamo) <= 0.5 && (prestamo.plan || []).every(c => estaCuotaPagada(prestamo, c.numero));
+  }
+  function finalizarSoloInteresSiCorresponde(prestamo){
+    if(!prestamo || !prestamo.soloInteres || prestamo.estado === 'finalizado') return false;
+    if(!prestamoSoloInteresSaldado(prestamo)) return false;
+    prestamo.estado = 'finalizado';
+    if(!prestamo.fechaFinalizacion){
+      const fechas = (prestamo.pagos || []).map(p => new Date(p.fecha).getTime()).filter(t => !isNaN(t));
+      prestamo.fechaFinalizacion = new Date(fechas.length ? Math.max.apply(null, fechas) : Date.now()).toISOString();
+    }
+    return true;
+  }
+  function sincronizarListaSoloInteres(lista){
+    let cambio = false;
+    (lista || []).forEach(p=>{
+      if(!p || !p.soloInteres) return;
+      try{
+        if(sincronizarPrestamoSoloInteres(p)) cambio = true;
+        if(finalizarSoloInteresSiCorresponde(p)) cambio = true;
+      }catch(err){ console.warn('No se pudo actualizar un préstamo a solo intereses:', p && p.id, err); }
+    });
+    return cambio;
+  }
+  // Reparto de un abono en un préstamo a solo intereses: primero los
+  // intereses pendientes (según el modo) y luego el capital.
+  function repartirAbonoSoloInteres(prestamo, valor, modo){
+    const partes = [];
+    let restante = valor;
+    let capital = 0;
+    if(modo !== 'solo_capital'){
+      for(const cuota of cuotasPendientesAbono){
+        if(restante <= 0.005) break;
+        const interesPendiente = Math.max(cuota.interes - sumaAbonadaCuota(prestamo, cuota.numero), 0);
+        const pago = Math.min(restante, interesPendiente);
+        if(pago > 0.005){ partes.push({ cuota, interesPagado: pago, capitalPagado: 0, monto: pago }); restante -= pago; }
+      }
+    }
+    if(modo === 'solo_capital' || modo === 'capital_interes' || modo === 'abono'){
+      capital = Math.min(Math.max(restante, 0), capitalPendienteSoloInteres(prestamo));
+      restante -= capital;
+    }
+    const referencia = partes.length ? partes[partes.length - 1].cuota : (cuotasPendientesAbono[0] || (prestamo.plan || [])[(prestamo.plan || []).length - 1]);
+    return { partes, capital, sobrante: restante > 0.5 ? restante : 0, cuotaReferencia: referencia ? referencia.numero : null };
+  }
+
   // Plan del formulario Nuevo/Editar Préstamo: el de siempre + las fechas
   // manuales de cuota si el usuario las indicó.
-  function calcularPlanPagosFormulario(datos){
+  function calcularPlanPagosFormulario(datos, minCuotasSoloInteres){
+    // NUEVO: préstamo a solo intereses — plan propio (ver generarPlanSoloInteres)
+    if(datos.soloInteres){
+      const editando = prestamoEditandoId !== null ? prestamosGuardados.find(p => p.id === prestamoEditandoId) : null;
+      return generarPlanSoloInteres(datos.valor, datos.tasa, datos.frecuencia, datos.fecha,
+        inputFechaPrimeraCuota.value, inputFechaPrimeraCuota.value ? inputFechaSegundaCuota.value : '',
+        minCuotasSoloInteres || 1, editando ? pagosCapitalSoloInteres(editando) : []);
+    }
     const plan = calcularPlanPagos(datos.valor, datos.cuotas, datos.frecuencia, datos.fecha, datos.tasa);
     return ajustarPlanAFechaPrimeraCuota(plan, datos.frecuencia, inputFechaPrimeraCuota.value, inputFechaSegundaCuota.value);
   }
@@ -17884,7 +18084,8 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const frecuencia = selectFrecuencia.value;
     const fecha = inputFechaCredito.value;
     const tipoInteres = selectTipoInteres.value;
-    return { valor, cuotas, tasa, frecuencia, fecha, tipoInteres };
+    const soloInteres = tipoPrestamoFormulario === 'solo_interes'; // NUEVO: préstamo a solo intereses (sin número de cuotas)
+    return { valor, cuotas: soloInteres ? 1 : cuotas, tasa, frecuencia, fecha, tipoInteres, soloInteres };
   }
 
   function validarDatosPrestamo(datos){
@@ -17927,7 +18128,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     actualizarBotonQuitarPrimeraCuota();
     if(simulacionSection.style.display !== 'none'){
       const datos = obtenerDatosFormularioPrestamo();
-      if(datos.valor > 0 && datos.cuotas > 0 && datos.fecha && !isNaN(datos.tasa)) renderizarPlanPagos(calcularPlanPagosFormulario(datos));
+      if(datos.valor > 0 && datos.cuotas > 0 && datos.fecha && !isNaN(datos.tasa)){ renderizarPlanPagos(calcularPlanPagosFormulario(datos, 6)); actualizarNotaSimulacionSoloInteres(datos); }
     }
   }
   inputFechaPrimeraCuota.addEventListener('change', ()=>{
@@ -17957,6 +18158,57 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
   });
   actualizarBotonQuitarPrimeraCuota();
 
+  // NUEVO (a pedido): selector "Por cuotas / Solo intereses" del formulario
+  let tipoPrestamoFormulario = 'cuotas';
+  const infoSoloInteres = document.getElementById('np-solo-interes-info');
+  const notaSimulacionSoloInteres = document.getElementById('np-solo-interes-nota');
+  const cajaCuotaDeseadaMini = document.getElementById('np-caja-cuota') ? document.getElementById('np-caja-cuota').closest('.np-mini') : null;
+  if(cajaCuotaDeseadaMini) cajaCuotaDeseadaMini.classList.add('np-mini-cuota-deseada');
+  function actualizarInfoSoloInteres(){
+    if(tipoPrestamoFormulario !== 'solo_interes'){ infoSoloInteres.style.display = 'none'; return; }
+    const valor = numeroDesdeCampo(inputValorPrestamo.value);
+    const tasa = parseFloat(String(inputTasaInteres.value).replace(',', '.'));
+    const frecuencia = (nombresFrecuencia[selectFrecuencia.value] || selectFrecuencia.value || '').toLowerCase();
+    if(!(valor > 0) || isNaN(tasa)){
+      infoSoloInteres.innerHTML = 'Escribe el monto y el % de interés por cuota. El cliente paga solo el interés en cada cuota <strong>' + escaparHtml(frecuencia) + '</strong> y devuelve el capital cuando pueda.';
+    }else{
+      infoSoloInteres.innerHTML = 'Interés de cada cuota ' + escaparHtml(frecuencia) + ':<span class="np-si-cuota">' + formatearPesos(interesPorCuotaSoloInteres(valor, tasa)) + '</span>' +
+        'El capital de <strong>' + formatearPesos(valor) + '</strong> lo devuelve cuando pueda, todo o en abonos. Si abona capital, el interés de las cuotas siguientes baja.';
+    }
+    infoSoloInteres.style.display = 'block';
+  }
+  function actualizarNotaSimulacionSoloInteres(datos){
+    if(!datos || !datos.soloInteres){ notaSimulacionSoloInteres.style.display = 'none'; return; }
+    notaSimulacionSoloInteres.textContent = 'Se muestran las próximas 6 cuotas de solo interés. El préstamo no tiene plazo: las cuotas siguen hasta que devuelva el capital de ' + formatearPesos(datos.valor) + '.';
+    notaSimulacionSoloInteres.style.display = 'block';
+  }
+  function establecerTipoPrestamoFormulario(tipo){
+    tipoPrestamoFormulario = tipo === 'solo_interes' ? 'solo_interes' : 'cuotas';
+    document.querySelectorAll('#screen-nuevo-prestamo .np-tipo-opcion').forEach(b=>{
+      const activo = b.dataset.tipo === tipoPrestamoFormulario;
+      b.classList.toggle('activo', activo);
+      b.setAttribute('aria-checked', String(activo));
+    });
+    screenNuevoPrestamo.classList.toggle('modo-solo-interes', tipoPrestamoFormulario === 'solo_interes');
+    if(tipoPrestamoFormulario === 'solo_interes' && !modoInteresActivo){
+      // En solo intereses el % es siempre la entrada (Modo 1)
+      modoInteresActivo = true;
+      aplicarModoInteresCuota();
+    }
+    actualizarInfoSoloInteres();
+    if(simulacionSection.style.display !== 'none'){
+      simulacionSection.style.display = 'none';
+      btnCompartirPlan.style.display = 'none';
+      btnVerSimulacion.classList.remove('open');
+    }
+    notaSimulacionSoloInteres.style.display = 'none';
+  }
+  document.querySelectorAll('#screen-nuevo-prestamo .np-tipo-opcion').forEach(b=>{
+    b.addEventListener('click', ()=> establecerTipoPrestamoFormulario(b.dataset.tipo));
+  });
+  [inputValorPrestamo, inputTasaInteres].forEach(el => el.addEventListener('input', actualizarInfoSoloInteres));
+  selectFrecuencia.addEventListener('change', actualizarInfoSoloInteres);
+
   // "Ver simulación" — calcula y muestra/oculta el Plan de Pagos
   btnVerSimulacion.addEventListener('click', ()=>{
     const abrir = simulacionSection.style.display === 'none';
@@ -17964,8 +18216,9 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     if(abrir){
       const datos = obtenerDatosFormularioPrestamo();
       if(!validarDatosPrestamo(datos)) return;
-      const plan = calcularPlanPagosFormulario(datos); // CAMBIO: mismo cálculo + fecha de primera cuota (si se indicó)
+      const plan = calcularPlanPagosFormulario(datos, 6); // CAMBIO: mismo cálculo + fechas manuales; solo intereses: 6 cuotas de muestra
       renderizarPlanPagos(plan);
+      actualizarNotaSimulacionSoloInteres(datos);
 
       simulacionSection.style.display = 'flex';
       btnCompartirPlan.style.display = 'flex';
@@ -17992,7 +18245,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const datos = obtenerDatosFormularioPrestamo();
     if(!validarDatosPrestamo(datos)) return;
 
-    const plan = calcularPlanPagosFormulario(datos); // CAMBIO: mismo cálculo + fecha de primera cuota (si se indicó)
+    const plan = calcularPlanPagosFormulario(datos, 6); // CAMBIO: mismo cálculo + fecha de primera cuota (si se indicó)
     canvasPlanActual = generarCanvasDetalleCredito(datos, plan);
     compartirPlanImg.src = canvasPlanActual.toDataURL('image/png');
     compartirPlanOverlay.style.display = 'flex';
@@ -18063,6 +18316,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     btnVerSimulacion.classList.remove('open');
     inputFechaCredito.value = claveFechaConOffset(0);
     inputFechaPrimeraCuota.value = ''; // NUEVO: fechas manuales vacías = fechas de siempre
+    if(typeof establecerTipoPrestamoFormulario === 'function') establecerTipoPrestamoFormulario('cuotas'); // NUEVO: vuelve a "Por cuotas"
     inputFechaSegundaCuota.value = '';
     actualizarBotonQuitarPrimeraCuota();
   }
@@ -18123,6 +18377,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     selectFrecuencia.value = prestamo.frecuencia;
     inputFechaCredito.value = prestamo.fecha;
     inputFechaPrimeraCuota.value = prestamo.fechaPrimeraCuota || ''; // NUEVO: las que se guardaron con el crédito (si tenía)
+    establecerTipoPrestamoFormulario(prestamo.soloInteres ? 'solo_interes' : 'cuotas'); // NUEVO: solo intereses
     inputFechaSegundaCuota.value = prestamo.fechaSegundaCuota || '';
     actualizarBotonQuitarPrimeraCuota();
     inputCuotaDeseada.value = formatearMiles(prestamo.cuotaMostrada || 0);
@@ -18374,7 +18629,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     // ---- 1) Calcular el alto total del canvas ANTES de dibujar ----
     const altoHeader = 105;
     const filasInfo = [
-      ['Valor solicitado', formatearPesos(datos.valor), 'N.° de cuotas', String(datos.cuotas)],
+      ['Valor solicitado', formatearPesos(datos.valor), 'N.° de cuotas', datos.soloInteres ? 'Solo intereses' : String(datos.cuotas)],
       ['Modalidad de pago', NOMBRES_FRECUENCIA[datos.frecuencia] || datos.frecuencia, 'Valor de cada cuota', formatearPesos(plan[0] ? plan[0].total : 0)],
       ['Fecha del préstamo', formatearFechaCorta(new Date(datos.fecha + 'T00:00:00')), '', '']
     ];
@@ -19192,6 +19447,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       prestamosGuardados[indice] = {
         ...anterior,
         tipoInteres: datos.tipoInteres,
+        soloInteres: !!datos.soloInteres, // NUEVO: préstamo a solo intereses
         valor: datos.valor,
         cuotas: datos.cuotas,
         cuotaMostrada,
@@ -19227,6 +19483,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
         codigo,
         clienteId: clienteEnDetalle.id,
         tipoInteres: datos.tipoInteres,
+        soloInteres: !!datos.soloInteres, // NUEVO: préstamo a solo intereses
         valor: datos.valor,
         cuotas: datos.cuotas,
         cuotaMostrada,
@@ -19333,10 +19590,13 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     if(!validarDatosPrestamo(datos)) return;
 
     const plan = calcularPlanPagosFormulario(datos); // CAMBIO: mismo cálculo + fecha de primera cuota (si se indicó)
-    const totalAPagar = plan.reduce((suma, c) => suma + c.total, 0);
+    // NUEVO: en solo intereses el total incluye el capital (se devuelve aparte de las cuotas)
+    const totalAPagar = plan.reduce((suma, c) => suma + c.total, 0) + (datos.soloInteres ? datos.valor : 0);
 
     // Cuota "estándar" mostrada al usuario en el formulario (editable, o la calculada por la fórmula)
-    const cuotaMostrada = numeroDesdeCampo(inputCuotaDeseada.value) || Math.round(plan[plan.length - 1].total);
+    const cuotaMostrada = datos.soloInteres
+      ? interesPorCuotaSoloInteres(datos.valor, datos.tasa)
+      : (numeroDesdeCampo(inputCuotaDeseada.value) || Math.round(plan[plan.length - 1].total));
 
     function continuarGuardado(){
       // NUEVO: ya no se pierde el historial de pagos al editar (ver
@@ -19390,7 +19650,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
   // no pueda quedar aplicado en 3 de los 4 lugares y desincronizado en el
   // cuarto.
   function pagosDeCuota(prestamo, numeroCuota){
-    return pagosDe(prestamo).filter(p => p.cuota === numeroCuota && p.aplicarA !== 'mora');
+    return pagosDe(prestamo).filter(p => p.cuota === numeroCuota && p.aplicarA !== 'mora' && p.aplicarA !== 'capital'); // CAMBIO: los abonos a capital (solo intereses) no cuentan como pago de la cuota
   }
 
   // Suma abonada a una cuota específica, sin contar recargos por mora (esos no cubren la cuota)
@@ -19464,6 +19724,8 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
   // un número distinto al de las cuotas reales. Con este cambio ya no
   // puede pasar: solo se lee de un lugar.
   function cuotaRealPrestamo(prestamo){
+    // NUEVO: solo intereses — la "cuota" es el interés de la próxima cuota (baja si abona capital)
+    if(prestamo.soloInteres && prestamo.cuotaMostrada != null) return prestamo.cuotaMostrada;
     if(prestamo.plan && prestamo.plan.length > 0) return prestamo.plan[0].total;
     return prestamo.cuotaMostrada || 0;
   }
@@ -19971,7 +20233,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
         // Puntualidad: se compara la fecha real del pago contra la fecha
         // programada de ESA cuota (si el pago es de una cuota puntual,
         // no un recargo ni un abono libre, que no tienen "fecha límite" propia).
-        if(pago.aplicarA !== 'mora' && pago.aplicarA !== 'abono' && pago.cuota != null){
+        if(pago.aplicarA !== 'mora' && pago.aplicarA !== 'abono' && pago.aplicarA !== 'capital' && pago.cuota != null){
           const cuotaPlan = (prestamo.plan || []).find(c => c.numero === pago.cuota);
           if(cuotaPlan){
             const diasDif = (new Date(pago.fecha) - new Date(cuotaPlan.fechaISO)) / (1000*60*60*24);
@@ -21310,7 +21572,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       </div>` : ''}
       <div class="loan-row">
         <span class="loan-row-label">Cuota:</span>
-        <span class="loan-row-value">${formatearPesos(cuotaRealPrestamo(prestamo))} <span class="loan-freq">/ ${nombreFrecuencia}</span></span>
+        <span class="loan-row-value">${formatearPesos(cuotaRealPrestamo(prestamo))} <span class="loan-freq">/ ${nombreFrecuencia}${prestamo.soloInteres ? ' · solo interés' : ''}</span></span>
       </div>
       <div class="loan-row">
         <span class="loan-row-label">Total a pagar:</span>
@@ -21845,7 +22107,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
           </div>
           <div class="loan-detail-item">
             <div class="loan-detail-label">Frecuencia</div>
-            <div class="loan-detail-value">${nombreFrecuencia}</div>
+            <div class="loan-detail-value">${nombreFrecuencia}${prestamo.soloInteres ? ' · Solo intereses' : ''}</div>
           </div>
           <div class="loan-detail-item">
             <div class="loan-detail-label">Cuota</div>
@@ -22092,7 +22354,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const completan = new Set();
     (prestamo.plan || []).forEach(cuota=>{
       const pagosCuota = pagosDe(prestamo)
-        .filter(p => p.cuota === cuota.numero && p.aplicarA !== 'mora' && !esPagoResiduo(p))
+        .filter(p => p.cuota === cuota.numero && p.aplicarA !== 'mora' && p.aplicarA !== 'capital' && !esPagoResiduo(p))
         .slice()
         .sort((a, b)=> (new Date(a.fecha) - new Date(b.fecha)) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
       let acumulado = 0;
@@ -22314,7 +22576,9 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
         <div class="cuota-numero${esRecargoMora ? ' recargo' : ''}${(esAbono || esAbonoParcial) ? ' abono' : ''}">${esRecargoMora ? 'R' : ((esAbono || esAbonoParcial) ? 'A' : pago.cuota)}</div>
         <div class="cuota-info">
           <div class="pago-monto">${formatearPesos(pago.monto)}</div>
-          <div class="pago-meta">${esAbonoParcial
+          <div class="pago-meta">${pago.aplicarA === 'capital'
+            ? '<span class="abono-label">Abono a capital</span> · ' + formatearFechaCorta(new Date(pago.fecha))
+            : esAbonoParcial
             ? '<span class="abono-label">Abono a cuota ' + pago.cuota + '</span> · ' + formatearFechaCorta(new Date(pago.fecha))
             : (esRecargoMora ? '<span class="recargo-label">Recargo</span>' : (esAbono ? '<span class="abono-label">Abono</span>' : 'Cuota ' + pago.cuota)) + ' · Pagada el ' + formatearFechaCorta(new Date(pago.fecha))}</div>
           ${(!esRecargoMora && !esAbono) ? `<div class="pago-desglose"><span class="pago-desglose-capital">Capital: ${formatearPesos(pago.capitalPagado || 0)}</span><span class="pago-desglose-interes">Interés: ${formatearPesos(pago.interesPagado || 0)}</span></div>` : ''}
@@ -22690,6 +22954,32 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       return;
     }
 
+    // NUEVO: préstamo a solo intereses — reparto propio (intereses y luego capital)
+    if(prestamoEnDetalle.soloInteres){
+      const r = repartirAbonoSoloInteres(prestamoEnDetalle, valorIngresado, modo);
+      const interesSI = r.partes.reduce((s, x) => s + x.interesPagado, 0);
+      if(modo === 'abono'){
+        resumenLabel1.textContent = 'Abono:';
+        resumenValor1.textContent = formatearPesos(interesSI + r.capital);
+      }else if(modo === 'solo_capital'){
+        resumenLabel1.textContent = 'Capital:';
+        resumenValor1.textContent = formatearPesos(r.capital);
+      }else{
+        resumenLabel1.textContent = 'Interés:';
+        resumenValor1.textContent = formatearPesos(interesSI);
+      }
+      if(r.sobrante > 0){
+        resumenLinea2.style.display = 'flex';
+        resumenLabel2Set('Excede lo que debe:', r.sobrante);
+      }else if(modo === 'capital_interes' || modo === 'solo_interes'){
+        resumenLinea2.style.display = 'flex';
+        resumenLabel2Set('Capital:', r.capital);
+      }else{
+        resumenLinea2.style.display = 'none';
+      }
+      return;
+    }
+
     const reparto = repartirAbonoEntreCuotas(prestamoEnDetalle, valorIngresado, modo);
     const interesPagado = reparto.reduce((s, r) => s + r.interesPagado, 0);
     const capitalPagado = reparto.reduce((s, r) => s + r.capitalPagado, 0);
@@ -22821,6 +23111,13 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
 
     prestamoEnDetalle = prestamo;
     cuotasPendientesAbono = (prestamo.plan || []).filter(c => pendienteDeCuota(prestamo, c) > 0);
+    // NUEVO: solo intereses — si tiene los intereses al día pero aún debe
+    // capital, igual puede abonar capital (se toma la última cuota como referencia).
+    let soloCapitalPendienteAbono = false;
+    if(cuotasPendientesAbono.length === 0 && prestamo.soloInteres && capitalPendienteSoloInteres(prestamo) > 0.5 && (prestamo.plan || []).length){
+      cuotasPendientesAbono = [prestamo.plan[prestamo.plan.length - 1]];
+      soloCapitalPendienteAbono = true;
+    }
 
     if(cuotasPendientesAbono.length === 0){
       alert('Este préstamo ya no tiene cuotas pendientes.');
@@ -22849,6 +23146,10 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       ? formatearMiles(Math.round(pendienteDeCuota(prestamo, cuotaInicialAbono)))
       : '';
     selectAplicarAbono.value = 'capital_interes';
+    if(soloCapitalPendienteAbono){ // NUEVO: solo intereses al día → abono a capital
+      selectAplicarAbono.value = 'solo_capital';
+      inputValorAbono.value = formatearMiles(Math.round(capitalPendienteSoloInteres(prestamo)));
+    }
     selectMetodoPago.value = 'efectivo';
     inputFechaAbono.value = claveFechaConOffset(0);
     notaAbonoVisible = false;
@@ -22912,6 +23213,31 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       };
       prestamosGuardados[indice].pagos.push(nuevoPago);
       pagosCreados.push(nuevoPago);
+    }else if(prestamosGuardados[indice].soloInteres){
+      // NUEVO: préstamo a solo intereses — un pago por cada cuota de interés
+      // cubierta y, si sobra (o es "Solo capital"), un "Abono a capital".
+      const r = repartirAbonoSoloInteres(prestamosGuardados[indice], valorIngresado, modo);
+      if(r.sobrante > 0){
+        alert('El valor supera lo que el cliente debe en este modo. Sobran ' + formatearPesos(r.sobrante) + '. Ajusta el valor o cambia "Aplicar a".');
+        return;
+      }
+      const loteAbono = Date.now();
+      r.partes.forEach((parte, i)=>{
+        const nuevoPago = { lote: loteAbono, id: Date.now() + i, cuota: parte.cuota.numero, fecha: fechaISO, monto: parte.monto,
+          interesPagado: parte.interesPagado, capitalPagado: 0, aplicarA: modo === 'solo_capital' ? 'solo_interes' : modo, metodoPago: metodo, nota };
+        prestamosGuardados[indice].pagos.push(nuevoPago);
+        pagosCreados.push(nuevoPago);
+      });
+      if(r.capital > 0.5){
+        const pagoCapital = { lote: loteAbono, id: Date.now() + r.partes.length + 1, cuota: r.cuotaReferencia, fecha: fechaISO, monto: r.capital,
+          interesPagado: 0, capitalPagado: r.capital, aplicarA: 'capital', metodoPago: metodo, nota };
+        prestamosGuardados[indice].pagos.push(pagoCapital);
+        pagosCreados.push(pagoCapital);
+      }
+      if(pagosCreados.length === 0){
+        alert('No hay intereses ni capital pendientes para aplicar este valor.');
+        return;
+      }
     }else{
       // CORREGIDO: se crea un registro de pago POR CADA cuota que cubre el
       // selector (+/-), en vez de uno solo atado siempre a la primera cuota.
@@ -22952,7 +23278,12 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     }
 
     // Si con este abono todas las cuotas quedan cubiertas, el préstamo se marca Finalizado
-    const todasPagadas = prestamosGuardados[indice].plan.every(c => estaCuotaPagada(prestamosGuardados[indice], c.numero));
+    // NUEVO: solo intereses — se actualiza el plan (interés según el capital
+    // que queda) y se considera saldado solo cuando pagó todo el capital.
+    if(prestamosGuardados[indice].soloInteres) sincronizarPrestamoSoloInteres(prestamosGuardados[indice]);
+    const todasPagadas = prestamosGuardados[indice].soloInteres
+      ? prestamoSoloInteresSaldado(prestamosGuardados[indice])
+      : prestamosGuardados[indice].plan.every(c => estaCuotaPagada(prestamosGuardados[indice], c.numero));
     prestamosGuardados[indice].estado = todasPagadas ? 'finalizado' : 'activo';
     // NUEVO: registra la fecha real en la que se completó el préstamo (para el
     // historial de créditos). Solo se fija la primera vez que se finaliza.
@@ -23394,7 +23725,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
   const nombresMetodoPago = { efectivo:'Efectivo', transferencia:'Transferencia', nequi:'Nequi', bancolombia:'Bancolombia', davivienda:'Davivienda' };
   // NUEVO: etiqueta legible de a qué se aplicó el abono (mismos valores que
   // usa el select "Aplicar abono a*" del formulario)
-  const nombresAplicarA = { capital_interes:'Interés y Capital', solo_interes:'Solo interés', solo_capital:'Solo capital', mora:'Recargo por mora', abono:'Abono' };
+  const nombresAplicarA = { capital_interes:'Interés y Capital', solo_interes:'Solo interés', solo_capital:'Solo capital', mora:'Recargo por mora', abono:'Abono', capital:'Abono a capital' };
 
   let cuotaMenuActiva = null; // { prestamo, cuota, pago }
 
@@ -23989,6 +24320,21 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       ['Modalidad de pago', NOMBRES_FRECUENCIA[prestamo.frecuencia] || prestamo.frecuencia]
     ];
 
+    // NUEVO (a pedido): crédito a SOLO INTERESES — el comprobante dice qué
+    // se pagó: fila "Concepto" y el título de arriba del valor abonado.
+    //   solo interés → "Pago de interés" / "PAGO DE INTERESES"
+    //   solo capital → "Abono a capital" / "ABONO A CAPITAL"
+    //   ambos        → "Interés y abono a capital" / "PAGO DE INTERESES Y CAPITAL"
+    let tituloSoloInteres = null;
+    if(prestamo.soloInteres && !esRecargoMora){
+      const huboInteres = pagosCuota.some(pg => pg.aplicarA !== 'capital' && pg.aplicarA !== 'mora');
+      const huboCapital = pagosCuota.some(pg => pg.aplicarA === 'capital');
+      const conceptoSoloInteres = huboInteres && huboCapital ? 'Interés y abono a capital' : (huboCapital ? 'Abono a capital' : 'Pago de interés');
+      tituloSoloInteres = huboInteres && huboCapital ? 'PAGO DE INTERESES Y CAPITAL' : (huboCapital ? 'ABONO A CAPITAL' : 'PAGO DE INTERESES');
+      filas = filas.filter(f => !f || (f[0] !== 'Concepto' && f[0] !== 'Cuota')); // NUEVO: sin "Cuota X de Y" (no tiene número fijo de cuotas)
+      filas.splice(1, 0, ['Concepto', conceptoSoloInteres]);
+    }
+
     // NUEVO: campos a incluir en el recibo (Ajustes → Plantilla de recibo).
     // "Recargo por la" también se oculta con el interruptor de cuota, porque
     // en un recargo por mora esa fila ES la referencia a la cuota.
@@ -24222,7 +24568,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     ctx.fillStyle = colorTitulo;
     ctx.font = fuente(700, 17);   // A pedido: aún más pequeño (antes 21; al inicio 26)
     ctx.textAlign = 'center';
-    ctx.fillText(esRecargoMora ? 'RECARGO PAGADO' : 'ABONO REALIZADO', centroX, yEtiquetaAbono);
+    ctx.fillText(esRecargoMora ? 'RECARGO PAGADO' : (tituloSoloInteres || 'ABONO REALIZADO'), centroX, yEtiquetaAbono); // NUEVO: título propio en créditos a solo intereses
 
     // Caja verde muy clara + monto (el elemento más grande del comprobante)
     trazarRectRedondeado(ctx, xCajaMonto, yCajaMonto, anchoCajaMonto, altoCajaMonto, 30);
@@ -31214,6 +31560,26 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     }catch(err){
       console.warn('Congelar fondo no disponible en este navegador:', err);
     }
+  })();
+
+  // NUEVO (a pedido): si la app queda abierta de un día para otro, los
+  // préstamos a solo intereses generan su nueva cuota sin tener que cerrarla.
+  // También corre una vez al abrir la app: genera las cuotas de interés que
+  // vencieron o se acercan desde la última vez (no tienen plazo fijo).
+  (function(){
+    let diaActual = new Date().toDateString();
+    function revisarCambioDeDia(forzar){
+      const hoy = new Date().toDateString();
+      if(hoy === diaActual && !forzar) return;
+      diaActual = hoy;
+      if(!sincronizarListaSoloInteres(prestamosGuardados)) return;
+      guardarPrestamos(prestamosGuardados);
+      try{ renderizarClientes(clientesFiltrados()); }catch(err){}
+      try{ actualizarCapitalCobradoDashboard(); actualizarInteresCobradoDashboard(); actualizarGananciasDashboard(); actualizarMoraCobradaDashboard(); }catch(err){}
+    }
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) revisarCambioDeDia(); });
+    setInterval(revisarCambioDeDia, 5 * 60 * 1000);
+    try{ revisarCambioDeDia(true); }catch(err){ console.warn('Solo intereses:', err); }
   })();
 
   // NUEVO: registra el service worker de la PWA (ver service-worker.js).
