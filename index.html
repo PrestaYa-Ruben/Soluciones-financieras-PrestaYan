@@ -21529,6 +21529,22 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     return activosCliente.findIndex(p => p.id === prestamo.id) + 1;
   }
 
+  // NUEVO (a pedido): número de crédito para recibos y comprobantes. Mismo
+  // criterio que ya usaba el comprobante de pago: si el cliente tiene más
+  // de un crédito, "Crédito #N" (del más antiguo al más reciente); si el
+  // crédito se acaba de finalizar con este pago, se ubica por fecha entre
+  // los activos del cliente. null si el cliente tiene un solo crédito.
+  function numeroCreditoParaRecibo(prestamo){
+    if(!prestamo) return null;
+    const n = numeroCreditoCliente(prestamo);
+    if(n) return n;
+    const grupo = prestamosGuardados
+      .filter(p => p.clienteId === prestamo.clienteId && (p.estado === 'activo' || p.id === prestamo.id))
+      .sort((a, b)=> (a.fecha || '').localeCompare(b.fecha || '') || (a.id - b.id));
+    if(grupo.length < 2) return null;
+    return grupo.findIndex(p => p.id === prestamo.id) + 1;
+  }
+
   function crearTarjetaPrestamo(prestamo, mostrarCliente){
     // Cuotas realmente completas (no cuenta registros de pago sueltos: un
     // recargo por mora o un abono parcial no deben inflar el progreso)
@@ -23523,7 +23539,8 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const vencida = cuotaVencida(prestamo, cuota);
     const fechaTexto = formatearFechaCorta(new Date(cuota.fechaISO));
     const estadoTexto = vencida ? ('venció el ' + fechaTexto) : ('vence el ' + fechaTexto);
-    return 'Hola, espero se encuentre muy bien. Quería recordarle que su cuota #' + cuota.numero +
+    const nCreditoRecordatorio = numeroCreditoParaRecibo(prestamo); // NUEVO (a pedido): "del crédito #N" si tiene varios
+    return 'Hola, espero se encuentre muy bien. Quería recordarle que su cuota #' + cuota.numero + (nCreditoRecordatorio ? ' del crédito #' + nCreditoRecordatorio : '') +
       ' por valor de ' + formatearPesos(cuota.total) + ' ' + estadoTexto +
       '. Agradecemos su pronta gestión para mantener sus pagos al día.';
   }
@@ -24366,17 +24383,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     // comprobante dice a cuál pertenece el pago ("3 de 6 · Crédito #2"),
     // con el mismo número de la píldora "Crédito N" de la tarjeta. Si la
     // fila Cuota está oculta, va junto al Concepto o en su propia fila.
-    const numeroCreditoRecibo = (function(){
-      const n = numeroCreditoCliente(prestamo);
-      if(n) return n;
-      // crédito que ya no está activo (ej. se finalizó con este mismo
-      // pago): se ubica por fecha entre los activos del cliente
-      const grupo = prestamosGuardados
-        .filter(p => p.clienteId === prestamo.clienteId && (p.estado === 'activo' || p.id === prestamo.id))
-        .sort((a, b)=> (a.fecha || '').localeCompare(b.fecha || '') || (a.id - b.id));
-      if(grupo.length < 2) return null;
-      return grupo.findIndex(p => p.id === prestamo.id) + 1;
-    })();
+    const numeroCreditoRecibo = numeroCreditoParaRecibo(prestamo); // misma lógica de siempre, ahora compartida
     if(numeroCreditoRecibo){
       const textoCredito = 'Crédito #' + numeroCreditoRecibo;
       const filaDestino = filas.find(f => f && f[0] === 'Cuota') || filas.find(f => f && f[0] === 'Concepto');
@@ -25235,6 +25242,9 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     // Mismas filas, en el mismo orden, que ya arma abrirDetallePago() en pantalla
     const filas = [];
     filas.push(['Cliente', clienteEnDetalle ? nombreClienteParaCompartir(clienteEnDetalle.nombre) : '—']);
+    // NUEVO (a pedido): si el cliente tiene más de un crédito, a cuál corresponde el pago
+    const nCreditoDetalle = numeroCreditoParaRecibo(prestamo);
+    if(nCreditoDetalle) filas.push(['Crédito', '#' + nCreditoDetalle]);
     filas.push(['Monto del préstamo', formatearPesos(prestamo.valor)]);
     filas.push(['Fecha del pago', formatearFechaCorta(new Date(pago.fecha))]);
     if(obtenerReciboMostrarCuota()){
@@ -25543,6 +25553,9 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     let texto = (esRecargoMora ? 'Comprobante de Recargo - ' : 'Comprobante de pago - ') + obtenerNombreNegocio() + '\n' +
       (ocultarCodigoEnRecibos() ? '' : 'Préstamo: ' + (prestamo.codigo || '') + '\n') +
       'Cliente: ' + (clienteEnDetalle ? nombreClienteParaCompartir(clienteEnDetalle.nombre) : '');
+    // NUEVO (a pedido): número de crédito si el cliente tiene más de uno
+    const nCreditoTexto = numeroCreditoParaRecibo(prestamo);
+    if(nCreditoTexto) texto += '\nCrédito: #' + nCreditoTexto;
 
     // NUEVO: campos a incluir (Ajustes → Plantilla de recibo)
     if(esRecargoMora){
@@ -27785,6 +27798,9 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     if(cliente.documento) filas.push(['Identificación', cliente.documento]);
     if(cliente.telefono) filas.push(['WhatsApp', cliente.telefono]);
     if(prestamoRef && !ocultarCodigoEnRecibos()) filas.push(['N.° de crédito', prestamoRef.codigo || '']);
+    // NUEVO (a pedido): si el cliente tiene más de un crédito, a cuál corresponde
+    const nCreditoReciboCliente = numeroCreditoParaRecibo(prestamoRef);
+    if(nCreditoReciboCliente) filas.push(['Crédito', '#' + nCreditoReciboCliente]);
     if(ultimo){
       filas.push(['Fecha del abono', formatearFechaCorta(new Date(ultimo.pago.fecha))]);
       filas.push(['Valor del abono', formatearPesos(ultimo.pago.monto)]);
