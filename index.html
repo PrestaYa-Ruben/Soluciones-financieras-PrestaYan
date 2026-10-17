@@ -19705,6 +19705,14 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     return Math.max((prestamo.totalAPagar || 0) - pagadoNoMora - totalDescontadoPrestamo(prestamo), 0);
   }
 
+  // NUEVO (a pedido): saldo que se muestra en recibos y comprobantes. En un
+  // crédito a solo intereses es solo el capital que falta (sin intereses);
+  // en los demás, el saldo pendiente de siempre.
+  function saldoPendienteRecibo(prestamo){
+    if(prestamo && prestamo.soloInteres) return capitalPendienteSoloInteres(prestamo);
+    return saldoPendientePrestamo(prestamo);
+  }
+
   // NUEVO: total realmente abonado al préstamo (sin contar mora), para el
   // historial de créditos. Misma fuente de datos que saldoPendientePrestamo,
   // solo que de lectura — no se toca la función original.
@@ -24386,7 +24394,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     }
     const ocultarSaldoYProximo = !!(opciones && opciones.ocultarSaldoYProximo);
     if(mostrarReciboSaldo() && !ocultarSaldoYProximo){
-      filas.push(['Saldo pendiente', formatearPesos(saldoPendientePrestamo(prestamo))]);
+      filas.push(['Saldo pendiente', formatearPesos(saldoPendienteRecibo(prestamo))]);
     }
     if(mostrarReciboProximo() && !ocultarSaldoYProximo){
       const proxima = proximaCuotaPendiente(prestamo);
@@ -25000,7 +25008,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     const { prestamo } = pagoEnDetalle;
 
     if(mostrarReciboSaldo()){
-      document.getElementById('detalle-pago-saldo').textContent = formatearPesos(saldoPendientePrestamo(prestamo));
+      document.getElementById('detalle-pago-saldo').textContent = formatearPesos(saldoPendienteRecibo(prestamo));
       filaSaldo.style.display = 'flex';
     }else{
       filaSaldo.style.display = 'none';
@@ -25244,7 +25252,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       filas.push(['Nota', pago.nota]);
     }
     if(mostrarReciboSaldo()){
-      filas.push(['Saldo pendiente', formatearPesos(saldoPendientePrestamo(prestamo))]);
+      filas.push(['Saldo pendiente', formatearPesos(saldoPendienteRecibo(prestamo))]);
     }
     if(mostrarReciboProximo()){
       const proxima = proximaCuotaPendiente(prestamo);
@@ -25552,7 +25560,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     }
 
     if(mostrarReciboSaldo()){
-      texto += '\nSaldo pendiente: ' + formatearPesos(saldoPendientePrestamo(prestamo));
+      texto += '\nSaldo pendiente: ' + formatearPesos(saldoPendienteRecibo(prestamo));
     }
     if(mostrarReciboProximo()){
       const proxima = proximaCuotaPendiente(prestamo);
@@ -27793,7 +27801,7 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     }
     if(prestamoRef){
       filas.push(['Monto del préstamo', formatearPesos(prestamoRef.valor)]);
-      filas.push(['Saldo pendiente', formatearPesos(saldoPendientePrestamo(prestamoRef))]);
+      filas.push(['Saldo pendiente', formatearPesos(saldoPendienteRecibo(prestamoRef))]);
       filas.push(['Modalidad de pago', NOMBRES_FRECUENCIA[prestamoRef.frecuencia] || prestamoRef.frecuencia]);
       filas.push(['Estado del crédito', prestamoRef.estado === 'finalizado' ? 'Finalizado' : 'Activo']);
     }
