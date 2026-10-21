@@ -6611,6 +6611,196 @@ html.fondo-congelado .menu-orden-overlay,
 html.fondo-congelado .confirm-modal-overlay *,
 html.fondo-congelado .action-sheet-overlay *,
 html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
+
+/* ==========================================================
+   REDISEÑO PANTALLA DE INICIO (a pedido, con imágenes de referencia).
+   Solo cambia cómo se VEN las tarjetas: los datos, cálculos y
+   funciones son los mismos de siempre. Aplica en modo claro; en modo
+   oscuro (y con "Tinte del dashboard" activo en las 4 tarjetas) se
+   conserva el diseño anterior.
+   ========================================================== */
+body:not(.modo-oscuro) #screen-inicio .dashboard{ gap:11px; padding-left:14px; padding-right:14px; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card{
+  display:grid; grid-template-columns:auto minmax(0,1fr); grid-template-rows:auto auto;
+  align-items:center; column-gap:11px; row-gap:13px;
+  text-align:left; padding:15px 14px 17px; min-height:0;
+  border-radius:19px; border-width:1.5px; border-style:solid;
+  position:relative; overflow:hidden;
+  background-repeat:no-repeat; background-position:right center; background-size:auto 100%;
+  box-shadow: inset 0 0 0 2.5px rgba(255,255,255,0.55), inset 0 2px 1px rgba(255,255,255,0.9), inset 0 -3px 6px rgba(40,50,90,0.05), 0 3px 8px rgba(40,50,90,0.07);
+}
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card::after, body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card::before{ display:none !important; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card .icon-container{
+  grid-column:1; grid-row:1; width:37px; height:37px; margin:0; border-radius:11px;
+  box-shadow: inset 0 1px 2px rgba(40,50,90,0.07), 0 2.5px 0 rgba(255,255,255,0.95), 0 3px 4px rgba(40,50,90,0.06);
+}
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card .icon-container svg{ width:19px; height:19px; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card .label{
+  grid-column:2; grid-row:1; margin:0; font-size:14px; font-weight:600; letter-spacing:-0.1px;
+  color:#4A5277 !important; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  text-shadow:0 1px 0 rgba(255,255,255,0.8);
+}
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card .value{
+  grid-column:1 / span 2; grid-row:2; margin:0; text-align:left;
+  font-size:clamp(19px, 6.4vw, 26px); font-weight:800; letter-spacing:-0.6px; line-height:1.05;
+  color:#2D3868 !important; white-space:nowrap;
+  text-shadow:0 1px 0 rgba(255,255,255,0.95), 0 2px 3px rgba(40,50,90,0.22);
+}
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-morado{ background-color:#E7EDF9; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='xMaxYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='0.42' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='0.62' stop-color='%23fff' stop-opacity='1'/%3E%3C/linearGradient%3E%3Cmask id='m'%3E%3Crect width='200' height='100' fill='url(%23f)'/%3E%3C/mask%3E%3C/defs%3E%3Cg fill='none' stroke-linecap='round' mask='url(%23m)'%3E%3Cpath d='M86.0 102 L148.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M86.0 102 L148.0 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M94.6 102 L156.6 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M94.6 102 L156.6 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M103.2 102 L165.2 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M103.2 102 L165.2 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M111.8 102 L173.8 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M111.8 102 L173.8 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M120.4 102 L182.4 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M120.4 102 L182.4 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M129.0 102 L191.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M129.0 102 L191.0 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M137.6 102 L199.6 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M137.6 102 L199.6 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M146.2 102 L208.2 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M146.2 102 L208.2 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M154.8 102 L216.8 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M154.8 102 L216.8 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M163.4 102 L225.4 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M163.4 102 L225.4 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M172.0 102 L234.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M172.0 102 L234.0 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M180.6 102 L242.6 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M180.6 102 L242.6 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M189.2 102 L251.2 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M189.2 102 L251.2 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M197.8 102 L259.8 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M197.8 102 L259.8 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M206.4 102 L268.4 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M206.4 102 L268.4 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M215.0 102 L277.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M215.0 102 L277.0 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M223.6 102 L285.6 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M223.6 102 L285.6 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3Cpath d='M232.2 102 L294.2 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M232.2 102 L294.2 -2' stroke='%23BCC8E6' stroke-width='1.25'/%3E%3C/g%3E%3C/svg%3E"), linear-gradient(160deg,#EDF2FB 0%,#E2E9F7 100%); border-color:#BCCAE7; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-morado .icon-container{ background:#DAE2F4; color:#38529B; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-ambar{ background-color:#F6EFDB; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='xMaxYMid slice'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M172 -2 L200 22' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M172 -2 L200 22' stroke='%23D8C389' stroke-width='1.25'/%3E%3Cpath d='M140 52 L182 94 L200 93' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M140 52 L182 94 L200 93' stroke='%23D8C389' stroke-width='1.25'/%3E%3Cpath d='M148 46 L156 100' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M148 46 L156 100' stroke='%23D8C389' stroke-width='1.25'/%3E%3Cpath d='M148 46 L162 74 L134 100' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M148 46 L162 74 L134 100' stroke='%23D8C389' stroke-width='1.25'/%3E%3Cpath d='M162 74 L200 73' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M162 74 L200 73' stroke='%23D8C389' stroke-width='1.25'/%3E%3Cpath d='M176 -2 L148 46' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M176 -2 L148 46' stroke='%23D8C389' stroke-width='1.25'/%3E%3Cpath d='M200 30 L176 -2' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M200 30 L176 -2' stroke='%23D8C389' stroke-width='1.25'/%3E%3Cpath d='M182 94 L184 100' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M182 94 L184 100' stroke='%23D8C389' stroke-width='1.25'/%3E%3Cpath d='M200 73 L182 94' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M200 73 L182 94' stroke='%23D8C389' stroke-width='1.25'/%3E%3C/g%3E%3C/svg%3E"), linear-gradient(160deg,#F9F3E3 0%,#F2E8CC 100%); border-color:#E2CF9B; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-ambar .icon-container{ background:#EEE1BD; color:#8A6A25; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-verde{ background-color:#E4F1DF; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='xMaxYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' x2='1'%3E%3Cstop offset='0.45' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='0.62' stop-color='%23fff' stop-opacity='1'/%3E%3C/linearGradient%3E%3Cmask id='m'%3E%3Crect width='200' height='100' fill='url(%23f)'/%3E%3C/mask%3E%3C/defs%3E%3Cg fill='none' stroke-linecap='round' mask='url(%23m)'%3E%3Cpath d='M96.0 -4 C102.0 14,90.0 30,96.0 48 S104.0 82,94.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M96.0 -4 C102.0 14,90.0 30,96.0 48 S104.0 82,94.0 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M106.5 -4 C113.5 14,99.5 30,106.5 48 S115.5 82,104.5 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M106.5 -4 C113.5 14,99.5 30,106.5 48 S115.5 82,104.5 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M117.0 -4 C125.0 14,109.0 30,117.0 48 S127.0 82,115.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M117.0 -4 C125.0 14,109.0 30,117.0 48 S127.0 82,115.0 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M127.5 -4 C133.5 14,121.5 30,127.5 48 S135.5 82,125.5 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M127.5 -4 C133.5 14,121.5 30,127.5 48 S135.5 82,125.5 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M138.0 -4 C145.0 14,131.0 30,138.0 48 S147.0 82,136.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M138.0 -4 C145.0 14,131.0 30,138.0 48 S147.0 82,136.0 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M148.5 -4 C156.5 14,140.5 30,148.5 48 S158.5 82,146.5 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M148.5 -4 C156.5 14,140.5 30,148.5 48 S158.5 82,146.5 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M159.0 -4 C165.0 14,153.0 30,159.0 48 S167.0 82,157.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M159.0 -4 C165.0 14,153.0 30,159.0 48 S167.0 82,157.0 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M169.5 -4 C176.5 14,162.5 30,169.5 48 S178.5 82,167.5 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M169.5 -4 C176.5 14,162.5 30,169.5 48 S178.5 82,167.5 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M180.0 -4 C188.0 14,172.0 30,180.0 48 S190.0 82,178.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M180.0 -4 C188.0 14,172.0 30,180.0 48 S190.0 82,178.0 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M190.5 -4 C196.5 14,184.5 30,190.5 48 S198.5 82,188.5 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M190.5 -4 C196.5 14,184.5 30,190.5 48 S198.5 82,188.5 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M201.0 -4 C208.0 14,194.0 30,201.0 48 S210.0 82,199.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M201.0 -4 C208.0 14,194.0 30,201.0 48 S210.0 82,199.0 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3Cpath d='M211.5 -4 C219.5 14,203.5 30,211.5 48 S221.5 82,209.5 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M211.5 -4 C219.5 14,203.5 30,211.5 48 S221.5 82,209.5 104' stroke='%23B5D6A8' stroke-width='1.2'/%3E%3C/g%3E%3C/svg%3E"), linear-gradient(160deg,#EAF4E6 0%,#DCECD5 100%); border-color:#B3D5A7; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-verde .icon-container{ background:#D2E8CA; color:#2E6B2C; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-rojo{ background-color:#F6E5E5; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='xMaxYMax slice'%3E%3Ccircle cx='195.0' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='88.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='87.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='80.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='79.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='72.9' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='72.2' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='65.3' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='64.6' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='57.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='57.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='50.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='49.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='42.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='41.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='34.9' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='34.2' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='27.3' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='26.6' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='195.0' cy='19.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='195.0' cy='19.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='88.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='87.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='80.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='79.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='72.9' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='72.2' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='65.3' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='64.6' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='57.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='57.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='50.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='49.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='42.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='41.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='187.4' cy='34.9' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='187.4' cy='34.2' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='179.8' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='179.8' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='179.8' cy='88.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='179.8' cy='87.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='179.8' cy='80.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='179.8' cy='79.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='179.8' cy='72.9' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='179.8' cy='72.2' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='179.8' cy='65.3' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='179.8' cy='64.6' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='179.8' cy='57.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='179.8' cy='57.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='179.8' cy='50.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='179.8' cy='49.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='179.8' cy='42.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='179.8' cy='41.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='172.2' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='172.2' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='172.2' cy='88.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='172.2' cy='87.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='172.2' cy='80.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='172.2' cy='79.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='172.2' cy='72.9' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='172.2' cy='72.2' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='172.2' cy='65.3' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='172.2' cy='64.6' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='172.2' cy='57.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='172.2' cy='57.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='172.2' cy='50.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='172.2' cy='49.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='164.6' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='164.6' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='164.6' cy='88.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='164.6' cy='87.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='164.6' cy='80.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='164.6' cy='79.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='164.6' cy='72.9' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='164.6' cy='72.2' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='164.6' cy='65.3' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='164.6' cy='64.6' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='164.6' cy='57.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='164.6' cy='57.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='157.0' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='157.0' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='157.0' cy='88.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='157.0' cy='87.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='157.0' cy='80.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='157.0' cy='79.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='157.0' cy='72.9' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='157.0' cy='72.2' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='149.4' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='149.4' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='149.4' cy='88.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='149.4' cy='87.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='149.4' cy='80.5' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='149.4' cy='79.8' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='141.8' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='141.8' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='141.8' cy='88.1' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='141.8' cy='87.4' r='2.15' fill='%23E7C3C5'/%3E%3Ccircle cx='134.2' cy='95.7' r='2.15' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='134.2' cy='95.0' r='2.15' fill='%23E7C3C5'/%3E%3C/svg%3E"), linear-gradient(160deg,#F9EAEA 0%,#F2DCDC 100%); border-color:#E4B9BB; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-rojo .icon-container{ background:#EFD3D4; color:#A63A3B; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-rojo .label{ color:#A63A3B !important; }
+body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card.tinte-rojo .value{ color:#A63A3B !important; }
+@media (max-width:380px){ body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card .label{ font-size:12.5px; } body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card{ column-gap:9px; padding:13px 12px 15px; } body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card .icon-container{ width:33px; height:33px; } }
+
+/* Encabezado "Estadísticas" */
+#screen-inicio .inicio-seccion-titulo{ font-size:18.5px; font-weight:800; color:var(--text); letter-spacing:-0.3px; margin:20px 16px 10px; }
+#screen-inicio .resumen-periodo-titulo{ display:none; }
+
+/* Estilo común de las tarjetas de Estadísticas */
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado,
+body:not(.modo-oscuro) #screen-inicio #tarjeta-comparativo-ganancias,
+body:not(.modo-oscuro) #screen-inicio #tarjeta-medios-pago-inicio,
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias,
+body:not(.modo-oscuro) #screen-inicio #tarjeta-capital-calle,
+body:not(.modo-oscuro) #screen-inicio #tarjeta-top-rutas-capital{
+  margin:12px 14px 0 !important; border-radius:19px !important; border-width:1.5px !important; border-style:solid !important;
+  background-repeat:no-repeat !important; overflow:hidden;
+  box-shadow: inset 0 0 0 2.5px rgba(255,255,255,0.5), inset 0 2px 1px rgba(255,255,255,0.85), 0 3px 9px rgba(40,50,90,0.07) !important;
+}
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado{ margin-top:0 !important; }
+
+/* Resumen del período */
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado{
+  padding:16px 16px 16px !important; border-color:#C3D0EC !important;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='xMaxYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='0.42' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='0.62' stop-color='%23fff' stop-opacity='1'/%3E%3C/linearGradient%3E%3Cmask id='m'%3E%3Crect width='200' height='100' fill='url(%23f)'/%3E%3C/mask%3E%3C/defs%3E%3Cg fill='none' stroke-linecap='round' mask='url(%23m)'%3E%3Cpath d='M110.0 102 L180.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M110.0 102 L180.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M121.0 102 L191.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M121.0 102 L191.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M132.0 102 L202.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M132.0 102 L202.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M143.0 102 L213.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M143.0 102 L213.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M154.0 102 L224.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M154.0 102 L224.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M165.0 102 L235.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M165.0 102 L235.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M176.0 102 L246.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M176.0 102 L246.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M187.0 102 L257.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M187.0 102 L257.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M198.0 102 L268.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M198.0 102 L268.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M209.0 102 L279.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M209.0 102 L279.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M220.0 102 L290.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M220.0 102 L290.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3Cpath d='M231.0 102 L301.0 -2' stroke='rgba(255,255,255,0.85)' stroke-width='1.6' transform='translate(1.3 0)'/%3E%3Cpath d='M231.0 102 L301.0 -2' stroke='%23C3CFEC' stroke-width='1.25'/%3E%3C/g%3E%3C/svg%3E") right top / auto 72% no-repeat, linear-gradient(165deg,#EEF2FC 0%,#E4EAF8 100%) !important;
+}
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado .resumen-periodo-titulo{ display:block; font-size:17px; font-weight:800; color:#1F2B5E; letter-spacing:-0.2px; margin:0 34px 12px 2px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado .info-tarjeta-btn{ top:14px; right:14px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado .loan-detail-grid{ gap:9px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado .loan-detail-item{
+  background:rgba(247,249,254,0.82); border:1.3px solid #D3DCF0; border-radius:13px; padding:12px 13px 11px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+}
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado .loan-detail-label{ font-size:10.5px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; color:#6D7896; margin-bottom:6px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado .loan-detail-value{ font-size:19px; font-weight:800; color:#1F2B5E; letter-spacing:-0.3px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado .loan-detail-value.success{ color:#1E8C3F; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado .loan-detail-value.danger{ color:#C9363E; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado hr.loan-divider{ display:none; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado > .loan-detail-item{ margin-top:9px; display:flex; align-items:center; justify-content:space-between; padding:13px 14px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado > .loan-detail-item .loan-detail-label{ margin:0; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-total-prestado-recaudado > .loan-detail-item .loan-detail-value{ font-size:20px; }
+
+/* Ganancias (este mes vs. mes pasado) */
+body:not(.modo-oscuro) #screen-inicio #tarjeta-comparativo-ganancias{
+  padding:16px 16px 14px !important; border-color:#B8D8AC !important;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='xMaxYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' x2='1'%3E%3Cstop offset='0.45' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='0.62' stop-color='%23fff' stop-opacity='1'/%3E%3C/linearGradient%3E%3Cmask id='m'%3E%3Crect width='200' height='100' fill='url(%23f)'/%3E%3C/mask%3E%3C/defs%3E%3Cg fill='none' stroke-linecap='round' mask='url(%23m)'%3E%3Cpath d='M110.0 -4 C116.0 14,104.0 30,110.0 48 S118.0 82,108.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M110.0 -4 C116.0 14,104.0 30,110.0 48 S118.0 82,108.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3Cpath d='M122.0 -4 C129.0 14,115.0 30,122.0 48 S131.0 82,120.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M122.0 -4 C129.0 14,115.0 30,122.0 48 S131.0 82,120.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3Cpath d='M134.0 -4 C142.0 14,126.0 30,134.0 48 S144.0 82,132.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M134.0 -4 C142.0 14,126.0 30,134.0 48 S144.0 82,132.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3Cpath d='M146.0 -4 C152.0 14,140.0 30,146.0 48 S154.0 82,144.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M146.0 -4 C152.0 14,140.0 30,146.0 48 S154.0 82,144.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3Cpath d='M158.0 -4 C165.0 14,151.0 30,158.0 48 S167.0 82,156.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M158.0 -4 C165.0 14,151.0 30,158.0 48 S167.0 82,156.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3Cpath d='M170.0 -4 C178.0 14,162.0 30,170.0 48 S180.0 82,168.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M170.0 -4 C178.0 14,162.0 30,170.0 48 S180.0 82,168.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3Cpath d='M182.0 -4 C188.0 14,176.0 30,182.0 48 S190.0 82,180.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M182.0 -4 C188.0 14,176.0 30,182.0 48 S190.0 82,180.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3Cpath d='M194.0 -4 C201.0 14,187.0 30,194.0 48 S203.0 82,192.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M194.0 -4 C201.0 14,187.0 30,194.0 48 S203.0 82,192.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3Cpath d='M206.0 -4 C214.0 14,198.0 30,206.0 48 S216.0 82,204.0 104' stroke='rgba(255,255,255,0.85)' stroke-width='1.7' transform='translate(1.2 0)'/%3E%3Cpath d='M206.0 -4 C214.0 14,198.0 30,206.0 48 S216.0 82,204.0 104' stroke='%23BEDDB3' stroke-width='1.2'/%3E%3C/g%3E%3C/svg%3E") right top / auto 78% no-repeat, linear-gradient(165deg,#EAF4E6 0%,#DFEFD9 100%) !important;
+}
+body:not(.modo-oscuro) #screen-inicio #tarjeta-comparativo-ganancias .comparativo-ganancias-icono{ background:#D6EACD; color:#2E7A33; border-radius:11px; box-shadow: inset 0 1px 2px rgba(40,70,40,0.07), 0 2.5px 0 rgba(255,255,255,0.95); }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-comparativo-ganancias .section-title{ color:#1F2B5E; font-weight:800; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-comparativo-ganancias .comparativo-ganancias-resumen{ background:rgba(250,253,248,0.7); border:1.3px solid #CBE3C1; border-radius:13px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+
+/* Medios de Pago */
+body:not(.modo-oscuro) #screen-inicio #tarjeta-medios-pago-inicio{
+  padding:16px 16px 14px !important; border-color:#CDBFEE !important;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 60' preserveAspectRatio='xMaxYMin meet'%3E%3Ccircle cx='116.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='116.0' cy='11.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='116.0' cy='18.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='116.0' cy='25.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='116.0' cy='32.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='116.0' cy='39.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='116.0' cy='46.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='109.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='109.0' cy='11.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='109.0' cy='18.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='109.0' cy='25.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='109.0' cy='32.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='109.0' cy='39.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='109.0' cy='46.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='102.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='102.0' cy='11.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='102.0' cy='18.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='102.0' cy='25.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='102.0' cy='32.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='102.0' cy='39.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='95.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='95.0' cy='11.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='95.0' cy='18.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='95.0' cy='25.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='95.0' cy='32.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='88.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='88.0' cy='11.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='88.0' cy='18.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='88.0' cy='25.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='81.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='81.0' cy='11.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='81.0' cy='18.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='81.0' cy='25.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='74.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='74.0' cy='11.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='74.0' cy='18.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='67.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='67.0' cy='11.0' r='1.7' fill='%23D3C6F1'/%3E%3Ccircle cx='60.0' cy='4.0' r='1.7' fill='%23D3C6F1'/%3E%3C/svg%3E") right 6px top 6px / 30% auto no-repeat, linear-gradient(165deg,#F2EEFC 0%,#E9E3FA 100%) !important;
+}
+body:not(.modo-oscuro) #screen-inicio #tarjeta-medios-pago-inicio .section-title{ font-size:19px; font-weight:800; color:#1F2B5E; margin-bottom:10px !important; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-medios-pago-inicio .mdp-total{ background:rgba(250,248,255,0.75); border:1.3px solid #DCD2F4; border-radius:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+
+/* Ganancias del Mes */
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias{ background:linear-gradient(170deg,#FBFAF7 0%,#F5F3EE 100%) !important; border-color:#E2DFD7 !important; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-resumen-inferior-verde{ gap:8px; background:transparent; border:none; padding:0; overflow:visible; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-divisor{ display:none; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat{ border-radius:13px; border:1.3px solid; padding:10px 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.85); }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-verde{ background:#DDF2E2; border-color:#B9E1C4; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-azul{ background:#DFE7F8; border-color:#C2D1EF; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-dorado{ background:#FBEBD4; border-color:#F0D2A6; }
+
+/* Capital en la Calle */
+body:not(.modo-oscuro) #screen-inicio #tarjeta-capital-calle{ background:linear-gradient(170deg,#FBFAF7 0%,#F5F3EE 100%) !important; border-color:#E2DFD7 !important; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-capital-calle .card-glow{ display:none; }
+
+/* Capital por Ruta */
+body:not(.modo-oscuro) #screen-inicio #tarjeta-top-rutas-capital{
+  border-color:#E2DFD7 !important;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='xMaxYMid slice'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M172 -2 L200 22' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M172 -2 L200 22' stroke='%23EADFC0' stroke-width='1.25'/%3E%3Cpath d='M140 52 L182 94 L200 93' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M140 52 L182 94 L200 93' stroke='%23EADFC0' stroke-width='1.25'/%3E%3Cpath d='M148 46 L156 100' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M148 46 L156 100' stroke='%23EADFC0' stroke-width='1.25'/%3E%3Cpath d='M148 46 L162 74 L134 100' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M148 46 L162 74 L134 100' stroke='%23EADFC0' stroke-width='1.25'/%3E%3Cpath d='M162 74 L200 73' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M162 74 L200 73' stroke='%23EADFC0' stroke-width='1.25'/%3E%3Cpath d='M176 -2 L148 46' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M176 -2 L148 46' stroke='%23EADFC0' stroke-width='1.25'/%3E%3Cpath d='M200 30 L176 -2' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M200 30 L176 -2' stroke='%23EADFC0' stroke-width='1.25'/%3E%3Cpath d='M182 94 L184 100' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M182 94 L184 100' stroke='%23EADFC0' stroke-width='1.25'/%3E%3Cpath d='M200 73 L182 94' stroke='rgba(255,255,255,0.9)' stroke-width='1.8' transform='translate(0.9 0.9)'/%3E%3Cpath d='M200 73 L182 94' stroke='%23EADFC0' stroke-width='1.25'/%3E%3C/g%3E%3C/svg%3E") right top / auto 96px no-repeat, linear-gradient(170deg,#FBFAF7 0%,#F5F3EE 100%) !important;
+}
+body:not(.modo-oscuro) #screen-inicio #tarjeta-comparativo-ganancias .comparativo-ganancias-resumen{ padding:11px 13px !important; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-medios-pago-inicio .mdp-total{ padding:11px 13px !important; margin-top:8px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .section-title{ font-size:16.5px !important; font-weight:800; color:#1F2B5E; line-height:1.2; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-icono{ background:#DDF1E2; color:#23893F; border-radius:11px; box-shadow: inset 0 1px 2px rgba(40,70,40,0.07), 0 2.5px 0 rgba(255,255,255,0.95); }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-subtitulo{ font-size:12.5px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-label{ font-size:11.5px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-valor{ font-size:15.5px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat{ padding:9px 7px 9px 8px; gap:5px; min-width:0; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat svg{ width:15px; height:15px; flex-shrink:0; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-label{ font-size:11px; white-space:nowrap; overflow:visible; text-overflow:clip; letter-spacing:-0.1px; }
+body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-texto{ min-width:0; overflow:visible; }
+@media (max-width:380px){ body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-label{ font-size:10px; } body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-valor{ font-size:13.5px; } }
+/* Teléfonos angostos: el título de la tarjeta baja a 2 líneas en vez de cortarse */
+@media (max-width:400px){
+  body:not(.modo-oscuro):not(.tinte-dashboard-activo) #screen-inicio #dashboard-tarjetas-inicio .stat-card .label{ white-space:normal; overflow:visible; text-overflow:clip; font-size:12.5px; line-height:1.15; }
+  body:not(.modo-oscuro) #screen-inicio #tarjeta-grafico-ganancias .ggm-stat-label{ white-space:normal; line-height:1.15; }
+}
+
+/* ==========================================================
+   NUEVO (a pedido, con imagen de referencia): modal "Ganancias por día"
+   ========================================================== */
+.gpd-overlay{ z-index:230; padding:18px 16px; }
+.gpd-card{
+  width:100%; max-width:380px; max-height:calc(100vh - 36px); max-height:calc(100dvh - 36px);
+  background:#FFFFFF; border-radius:24px; box-shadow:0 18px 50px rgba(20,30,60,0.25);
+  display:flex; flex-direction:column; overflow:hidden; animation:gpdEntrar .22s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes gpdEntrar{ from{ opacity:0; transform:translateY(10px) scale(.97); } to{ opacity:1; transform:none; } }
+.gpd-header{ display:flex; align-items:center; gap:8px; padding:16px 12px 8px 16px; }
+.gpd-titulo{ flex:1; min-width:0; font-size:16px; font-weight:500; color:#1E2433; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gpd-mes{ display:flex; align-items:center; gap:2px; background:#E6F2EA; border-radius:999px; padding:3px 4px; flex-shrink:0; }
+.gpd-mes button{ width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:#2E7D46; border-radius:50%; }
+.gpd-mes button svg{ width:15px; height:15px; stroke:currentColor; }
+.gpd-mes button:disabled{ color:#A9CDB5; }
+.gpd-mes span{ font-size:14.5px; font-weight:800; color:#2E7D46; min-width:0; padding:0 4px; text-align:center; letter-spacing:-0.2px; white-space:nowrap; }
+.gpd-titulo{ font-size:clamp(14px, 4.1vw, 16px); white-space:normal; overflow:visible; line-height:1.2; }
+.gpd-cerrar{ width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:#6B7280; flex-shrink:0; }
+.gpd-cerrar svg{ width:20px; height:20px; stroke:currentColor; }
+.gpd-lista{ overflow-y:auto; overscroll-behavior:contain; padding:2px 12px 4px 16px; }
+.gpd-fila{ display:grid; grid-template-columns:24px minmax(0,1fr) 92px; align-items:center; column-gap:9px; height:20.5px; }
+.gpd-dia{ font-size:13px; font-weight:500; color:#5D6475; }
+.gpd-track{ height:7px; border-radius:999px; background:#ECEEF2; overflow:hidden; }
+.gpd-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg,#6FC48D 0%,#3E8D55 100%); min-width:0; }
+.gpd-valor{ font-size:13px; font-weight:600; color:#1E2433; white-space:nowrap; justify-self:start; letter-spacing:-0.1px; }
+.gpd-valor.mejor{ background:#3E8D55; color:#FFFFFF; padding:1px 6px; border-radius:6px; margin-left:-6px; box-shadow:0 2px 5px rgba(46,125,70,0.35); font-weight:800; }
+.gpd-valor.peor{ background:#D2403F; color:#FFFFFF; padding:1px 6px; border-radius:6px; margin-left:-6px; box-shadow:0 2px 5px rgba(210,64,63,0.35); font-weight:800; }
+.gpd-fila.hoy .gpd-dia, .gpd-fila.hoy .gpd-valor:not(.mejor):not(.peor){ color:#2E7D46; font-weight:800; }
+.gpd-fila.futuro .gpd-dia, .gpd-fila.futuro .gpd-valor{ color:#B4BAC5; font-weight:500; }
+.gpd-fila.futuro .gpd-track{ background:#F3F4F7; }
+.gpd-pie{ border-top:1px solid #E5E7EB; margin:6px 14px 0 16px; padding:10px 0 14px; }
+.gpd-total-fila{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.gpd-total-fila span{ font-size:14.5px; font-weight:600; color:#5D6475; }
+.gpd-total-fila strong{ font-size:15.5px; font-weight:800; color:#1E2433; }
+.gpd-leyenda{ display:flex; gap:16px; margin-top:8px; font-size:13px; color:#5D6475; }
+.gpd-leyenda span{ display:flex; align-items:center; gap:6px; }
+.gpd-cuadro{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+.gpd-cuadro.verde{ background:#3E8D55; } .gpd-cuadro.rojo{ background:#D2403F; }
+.gpd-nota{ margin-top:6px; font-size:12px; color:#8A90A0; }
+#tarjeta-ganancias .icon-container{ cursor:pointer; transition:transform .12s ease; }
+.gpd-leyenda b{ font-weight:400; }
+.gpd-lista.gpd-por-mes .gpd-fila{ grid-template-columns:32px minmax(0,1fr) 104px; height:30px; }
+.gpd-lista.gpd-por-mes .gpd-track{ height:9px; }
+.gpd-lista.gpd-por-mes .gpd-dia, .gpd-lista.gpd-por-mes .gpd-valor{ font-size:14px; }
+#tarjeta-comparativo-ganancias .comparativo-ganancias-icono{ cursor:pointer; transition:transform .12s ease; }
+#tarjeta-comparativo-ganancias .comparativo-ganancias-icono:active{ transform:scale(0.9); }
+#tarjeta-ganancias .icon-container:active{ transform:scale(0.9); }
+body.modo-oscuro .gpd-card{ background:#1B2029; }
+body.modo-oscuro .gpd-titulo, body.modo-oscuro .gpd-valor, body.modo-oscuro .gpd-total-fila strong{ color:#F2F4F8; }
+body.modo-oscuro .gpd-track{ background:#2A3040; }
+body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
 </style>
 
 </head>
@@ -6865,7 +7055,10 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
        dashboard. Los IDs de Medios de Pago se mantienen (ya los usa
        actualizarMediosPagoDashboard), así que ese JS no cambió.
        ========================================================== -->
+  <!-- NUEVO (rediseño con imagen de referencia): encabezado de sección -->
+  <div class="inicio-seccion-titulo">Estadísticas</div>
   <div class="card" id="tarjeta-total-prestado-recaudado" style="padding:20px 18px; margin:0 14px; position:relative;">
+    <div class="resumen-periodo-titulo">Resumen del período</div>
     <button type="button" class="info-tarjeta-btn" data-info-titulo="Total Prestado y Recaudado" data-info-texto="Total Prestado: la suma de los créditos nuevos otorgados en el período seleccionado (tocá el monto para ver a quién se le prestó). Total Recaudado: la suma de todos los abonos cobrados (efectivo + transferencia) en ese mismo período. Balance: Total Recaudado menos Total Prestado — en verde si recaudaste más de lo que prestaste en el período, en rojo si prestaste más de lo que recaudaste.">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
     </button>
@@ -6886,32 +7079,6 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     <div class="loan-detail-item">
       <div class="loan-detail-label">Balance</div>
       <div class="loan-detail-value success" id="dashboard-balance-periodo">$0</div>
-    </div>
-  </div>
-
-  <!-- NUEVO: Medios de Pago rediseñada — Efectivo y Transferencia
-       apiladas (una fila debajo de otra) en vez de en columnas, con
-       clases propias "mdp-*" y paddings reducidos para que quede lo más
-       compacta posible. -->
-  <div class="card" id="tarjeta-medios-pago-inicio" style="padding:14px 16px; margin:9px 14px 0;">
-    <div class="section-title" style="margin-bottom:6px;">Medios de Pago</div>
-    <div class="mdp-fila">
-      <div class="mdp-icono verde">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="3"></circle></svg>
-      </div>
-      <span class="mdp-nombre">Efectivo</span>
-      <span class="mdp-valor verde" id="dashboard-medio-efectivo">$0</span>
-    </div>
-    <div class="mdp-fila">
-      <div class="mdp-icono morado">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-      </div>
-      <span class="mdp-nombre">Transferencia</span>
-      <span class="mdp-valor morado" id="dashboard-medio-transferencia">$0</span>
-    </div>
-    <div class="mdp-total">
-      <span>Total Movido</span>
-      <span id="dashboard-medios-total">$0</span>
     </div>
   </div>
 
@@ -6963,6 +7130,32 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
         <span class="comparativo-ganancias-resumen-pct" id="comparativo-ganancias-resumen-pct">0,00%</span>
       </div>
       <div class="comparativo-ganancias-resumen-texto" id="comparativo-ganancias-texto">Las ganancias se mantienen iguales</div>
+    </div>
+  </div>
+
+  <!-- NUEVO: Medios de Pago rediseñada — Efectivo y Transferencia
+       apiladas (una fila debajo de otra) en vez de en columnas, con
+       clases propias "mdp-*" y paddings reducidos para que quede lo más
+       compacta posible. -->
+  <div class="card" id="tarjeta-medios-pago-inicio" style="padding:14px 16px; margin:9px 14px 0;">
+    <div class="section-title" style="margin-bottom:6px;">Medios de Pago</div>
+    <div class="mdp-fila">
+      <div class="mdp-icono verde">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="3"></circle></svg>
+      </div>
+      <span class="mdp-nombre">Efectivo</span>
+      <span class="mdp-valor verde" id="dashboard-medio-efectivo">$0</span>
+    </div>
+    <div class="mdp-fila">
+      <div class="mdp-icono morado">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+      </div>
+      <span class="mdp-nombre">Transferencia</span>
+      <span class="mdp-valor morado" id="dashboard-medio-transferencia">$0</span>
+    </div>
+    <div class="mdp-total">
+      <span>Total Movido</span>
+      <span id="dashboard-medios-total">$0</span>
     </div>
   </div>
 
@@ -7038,10 +7231,12 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
       </div>
       <div class="ggm-stat-divisor"></div>
       <div class="ggm-stat ggm-stat-azul">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
         <div class="ggm-stat-texto">
-          <div class="ggm-stat-label">Promedio diario</div>
-          <div class="ggm-stat-valor" id="ggm-promedio-diario">$0</div>
+          <div class="ggm-stat-label">Peor día</div>
+          <div class="ggm-stat-valor" id="ggm-peor-dia">$0</div>
+          <div class="ggm-stat-sub" id="ggm-peor-dia-fecha">—</div>
+          <div id="ggm-promedio-diario" hidden></div>
         </div>
       </div>
       <div class="ggm-stat-divisor"></div>
@@ -10890,6 +11085,31 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
 <!-- ==========================================================
      NAVEGACIÓN INFERIOR FIJA
      ========================================================== -->
+<!-- NUEVO (a pedido, con imagen de referencia): "Ganancias por día" — se
+     abre al tocar el ícono de la tarjeta "Ganancias" de Inicio. Usa los
+     mismos datos reales del gráfico "Ganancias del Mes"
+     (gananciasPorDiaDelMes: interés + mora de cada día, respetando el
+     filtro de rutas de Inicio). -->
+<div class="confirm-modal-overlay gpd-overlay" id="gpd-overlay" style="display:none;">
+  <div class="gpd-card" role="dialog" aria-modal="true" aria-labelledby="gpd-titulo">
+    <div class="gpd-header">
+      <div class="gpd-titulo" id="gpd-titulo">Ganancias por día</div>
+      <div class="gpd-mes">
+        <button type="button" id="gpd-mes-anterior" aria-label="Mes anterior"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+        <span id="gpd-mes-texto">—</span>
+        <button type="button" id="gpd-mes-siguiente" aria-label="Mes siguiente"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+      </div>
+      <button type="button" class="gpd-cerrar" id="gpd-cerrar" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div class="gpd-lista" id="gpd-lista"></div>
+    <div class="gpd-pie">
+      <div class="gpd-total-fila"><span id="gpd-total-etiqueta">Total</span><strong id="gpd-total-valor">$0</strong></div>
+      <div class="gpd-leyenda"><span><i class="gpd-cuadro verde"></i><b id="gpd-leyenda-mejor">Mejor día</b></span><span><i class="gpd-cuadro rojo"></i><b id="gpd-leyenda-peor">Peor día</b></span></div>
+      <div class="gpd-nota">Ganancias = interés + mora</div>
+    </div>
+  </div>
+</div>
+
 <nav class="bottom-nav">
   <a class="nav-item active" data-nav="inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"></path><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"></path></svg>
@@ -21225,6 +21445,13 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
 
     const promedioDiario = datosEsteMes.length > 0 ? totalEsteMes / datosEsteMes.length : 0;
     document.getElementById('ggm-promedio-diario').textContent = formatearPesos(Math.round(promedioDiario));
+
+    // NUEVO (rediseño): "Peor día" — el día con menor ganancia entre los
+    // días del mes que tuvieron alguna ganancia (los días en $0 no cuentan).
+    const diasConGanancia = datosEsteMes.filter(d => d.total > 0);
+    const peorDia = diasConGanancia.reduce((min, d) => (!min || d.total < min.total) ? d : min, null);
+    document.getElementById('ggm-peor-dia').textContent = formatearPesos(peorDia ? peorDia.total : 0);
+    document.getElementById('ggm-peor-dia-fecha').textContent = peorDia ? ('Día ' + peorDia.dia) : '—';
 
     let mejorDia = datosEsteMes[0] || { dia: 1, total: 0 };
     datosEsteMes.forEach(d => { if(d.total > mejorDia.total) mejorDia = d; });
@@ -31584,6 +31811,119 @@ html.fondo-congelado .menu-lateral-overlay *{ overscroll-behavior:contain; }
     }catch(err){
       console.warn('Congelar fondo no disponible en este navegador:', err);
     }
+  })();
+
+  // ==========================================================
+  // NUEVO (a pedido): modal "Ganancias por día" — se abre al tocar el
+  // ícono de la tarjeta "Ganancias" de Inicio. Datos reales del mes
+  // (gananciasPorDiaDelMes = interés + mora de cada día, con el mismo
+  // filtro de rutas de Inicio). Mejor día en verde, peor día (el menor
+  // entre los días con ganancia) en rojo, hoy resaltado y los días que
+  // aún no llegan en gris.
+  // ==========================================================
+  (function(){
+    const overlay = document.getElementById('gpd-overlay');
+    const lista = document.getElementById('gpd-lista');
+    const MESES_CORTOS_GPD = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    let mesGpd = new Date(); mesGpd.setDate(1);
+    // NUEVO (a pedido): el mismo modal también muestra "Ganancias por mes"
+    // (se abre desde el ícono de la tarjeta Ganancias de Estadísticas).
+    let modoGpd = 'dia';           // 'dia' | 'mes'
+    let anioGpd = new Date().getFullYear();
+
+    function renderizarPorMes(){
+      const hoy = new Date();
+      const esAnioActual = anioGpd === hoy.getFullYear();
+      const esFuturo = anioGpd > hoy.getFullYear();
+      document.getElementById('gpd-titulo').textContent = 'Ganancias por mes';
+      document.getElementById('gpd-mes-texto').textContent = String(anioGpd);
+      document.getElementById('gpd-mes-siguiente').disabled = esAnioActual || esFuturo;
+      // Cada mes = suma de sus días (misma fórmula: interés + mora, mismo filtro de rutas)
+      const datos = MESES_CORTOS_GPD.map((nombre, m)=>({ m, nombre, total: totalGananciasLista(gananciasPorDiaDelMes(new Date(anioGpd, m, 1))) }));
+      const conGanancia = datos.filter(d => d.total > 0);
+      const max = Math.max(0, ...datos.map(d => d.total));
+      const mejor = conGanancia.reduce((x, d) => (!x || d.total > x.total) ? d : x, null);
+      const peor = conGanancia.length > 1 ? conGanancia.reduce((x, d) => (!x || d.total < x.total) ? d : x, null) : null;
+      lista.innerHTML = '';
+      lista.classList.add('gpd-por-mes');
+      datos.forEach(d=>{
+        const futuro = esFuturo || (esAnioActual && d.m > hoy.getMonth());
+        const fila = document.createElement('div');
+        fila.className = 'gpd-fila' + (esAnioActual && d.m === hoy.getMonth() ? ' hoy' : '') + (futuro ? ' futuro' : '');
+        const pct = max > 0 ? Math.max(d.total > 0 ? 3 : 0, (d.total / max) * 100) : 0;
+        const claseValor = mejor && d.m === mejor.m ? ' mejor' : (peor && d.m === peor.m ? ' peor' : '');
+        fila.innerHTML = '<span class="gpd-dia">' + d.nombre + '</span>' +
+          '<div class="gpd-track"><div class="gpd-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+          '<span class="gpd-valor' + claseValor + '">' + formatearPesos(Math.round(d.total)) + '</span>';
+        lista.appendChild(fila);
+      });
+      document.getElementById('gpd-total-etiqueta').textContent = 'Total ' + anioGpd;
+      document.getElementById('gpd-total-valor').textContent = formatearPesos(Math.round(datos.reduce((s2, d) => s2 + d.total, 0)));
+      document.getElementById('gpd-leyenda-mejor').textContent = 'Mejor mes';
+      document.getElementById('gpd-leyenda-peor').textContent = 'Peor mes';
+    }
+
+    function renderizar(){
+      if(modoGpd === 'mes') return renderizarPorMes();
+      document.getElementById('gpd-titulo').textContent = 'Ganancias por día';
+      lista.classList.remove('gpd-por-mes');
+      document.getElementById('gpd-leyenda-mejor').textContent = 'Mejor día';
+      document.getElementById('gpd-leyenda-peor').textContent = 'Peor día';
+      const hoy = new Date();
+      const anio = mesGpd.getFullYear(), mes = mesGpd.getMonth();
+      const esMesActual = hoy.getFullYear() === anio && hoy.getMonth() === mes;
+      const esFuturo = (anio > hoy.getFullYear()) || (anio === hoy.getFullYear() && mes > hoy.getMonth());
+      const datos = gananciasPorDiaDelMes(mesGpd);
+      const textoMes = MESES_CORTOS_GPD[mes] + ' ' + anio;
+      document.getElementById('gpd-mes-texto').textContent = textoMes;
+      document.getElementById('gpd-mes-siguiente').disabled = esMesActual || esFuturo;
+
+      const conGanancia = datos.filter(d => d.total > 0);
+      const max = Math.max(0, ...datos.map(d => d.total));
+      const mejor = conGanancia.reduce((m, d) => (!m || d.total > m.total) ? d : m, null);
+      const peor = conGanancia.length > 1 ? conGanancia.reduce((m, d) => (!m || d.total < m.total) ? d : m, null) : null;
+
+      lista.innerHTML = '';
+      datos.forEach(d=>{
+        const futuro = esFuturo || (esMesActual && d.dia > hoy.getDate());
+        const fila = document.createElement('div');
+        fila.className = 'gpd-fila' + (esMesActual && d.dia === hoy.getDate() ? ' hoy' : '') + (futuro ? ' futuro' : '');
+        const pct = max > 0 ? Math.max(d.total > 0 ? 3 : 0, (d.total / max) * 100) : 0;
+        const claseValor = mejor && d.dia === mejor.dia ? ' mejor' : (peor && d.dia === peor.dia ? ' peor' : '');
+        fila.innerHTML = '<span class="gpd-dia">' + d.dia + '</span>' +
+          '<div class="gpd-track"><div class="gpd-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+          '<span class="gpd-valor' + claseValor + '">' + formatearPesos(Math.round(d.total)) + '</span>';
+        lista.appendChild(fila);
+      });
+      document.getElementById('gpd-total-etiqueta').textContent = 'Total ' + textoMes;
+      document.getElementById('gpd-total-valor').textContent = formatearPesos(Math.round(totalGananciasLista(datos)));
+    }
+    function abrir(modo){
+      modoGpd = modo === 'mes' ? 'mes' : 'dia';
+      anioGpd = new Date().getFullYear();
+      mesGpd = new Date(); mesGpd.setDate(1);
+      renderizar();
+      overlay.style.display = 'flex';
+      lista.scrollTop = 0;
+    }
+    function cerrar(){ overlay.style.display = 'none'; }
+    const icono = document.querySelector('#tarjeta-ganancias .icon-container');
+    if(icono){
+      icono.setAttribute('role', 'button');
+      icono.setAttribute('aria-label', 'Ver ganancias por día');
+      icono.addEventListener('click', (e)=>{ e.stopPropagation(); abrir('dia'); });
+    }
+    // NUEVO: ícono de la tarjeta "Ganancias" (Estadísticas) → ganancias por mes
+    const iconoMensual = document.querySelector('#tarjeta-comparativo-ganancias .comparativo-ganancias-icono');
+    if(iconoMensual){
+      iconoMensual.setAttribute('role', 'button');
+      iconoMensual.setAttribute('aria-label', 'Ver ganancias por mes');
+      iconoMensual.addEventListener('click', (e)=>{ e.stopPropagation(); abrir('mes'); });
+    }
+    document.getElementById('gpd-cerrar').addEventListener('click', cerrar);
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) cerrar(); });
+    document.getElementById('gpd-mes-anterior').addEventListener('click', ()=>{ if(modoGpd === 'mes') anioGpd--; else mesGpd = new Date(mesGpd.getFullYear(), mesGpd.getMonth() - 1, 1); renderizar(); });
+    document.getElementById('gpd-mes-siguiente').addEventListener('click', ()=>{ if(modoGpd === 'mes') anioGpd++; else mesGpd = new Date(mesGpd.getFullYear(), mesGpd.getMonth() + 1, 1); renderizar(); });
   })();
 
   // NUEVO (a pedido): si la app queda abierta de un día para otro, los
