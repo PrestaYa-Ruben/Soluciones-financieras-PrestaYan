@@ -8220,10 +8220,19 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
           <div class="form-field np-campo">
             <label class="field-label" for="select-frecuencia">Frecuencia</label>
             <select class="field-input field-select" id="select-frecuencia" required>
-              <option value="diario">Diario</option>
-              <option value="semanal">Semanal</option>
-              <option value="quincenal" selected>Quincenal</option>
-              <option value="mensual">Mensual</option>
+              <!-- CAMBIO (a pedido): más frecuencias de pago. data-detalle se
+                   muestra solo en la lista desplegable ("Cada N días"). -->
+              <option value="diario" data-detalle="Cada 1 día">Diario</option>
+              <option value="interdiario" data-detalle="Cada 2 días">Interdiario</option>
+              <option value="tridiario" data-detalle="Cada 3 días">Tridiario</option>
+              <option value="semanal" data-detalle="Cada 7 días">Semanal</option>
+              <option value="bisemanal" data-detalle="Cada 14 días">Bisemanal</option>
+              <option value="quincenal" data-detalle="Cada 15 días" selected>Quincenal</option>
+              <option value="mensual" data-detalle="Cada 30 días">Mensual</option>
+              <option value="bimensual" data-detalle="Cada 60 días">Bimensual</option>
+              <option value="trimestral" data-detalle="Cada 90 días">Trimestral</option>
+              <option value="semestral" data-detalle="Cada 180 días">Semestral</option>
+              <option value="anual" data-detalle="Cada 365 días">Anual</option>
             </select>
           </div>
         </div>
@@ -12466,7 +12475,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     selectEl._refrescarTriggerPersonalizado = refrescarTexto;
 
     trigger.addEventListener('click', ()=>{
-      const opciones = Array.from(selectEl.options).map(o => ({ value:o.value, label:o.textContent }));
+      const opciones = Array.from(selectEl.options).map(o => ({ value:o.value, label:o.textContent + (o.dataset.detalle ? '  ' + o.dataset.detalle : '') })); // CAMBIO: muestra "Cada N días" si la opción lo trae
       if(opciones.length === 0) return;
       abrirSelectorPersonalizado(titulo, opciones, selectEl.value, (valor)=>{
         selectEl.value = valor;
@@ -17925,7 +17934,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
   // calcularInteresDesdeCuota ni sincronizarInteresCuota — solo llena el
   // campo Interés y llama a sincronizarInteresCuota() ya existente para
   // que la Cuota deseada se recalcule con la MISMA fórmula de siempre.
-  const BLOQUE_INTERES_POR_FRECUENCIA = { diario:24, semanal:4, quincenal:2, mensual:1 };
+  const BLOQUE_INTERES_POR_FRECUENCIA = { diario:24, interdiario:12, tridiario:8, semanal:4, bisemanal:2, quincenal:2, mensual:1, bimensual:1/2, trimestral:1/3, semestral:1/6, anual:1/12 }; // CAMBIO: + frecuencias nuevas (mismo criterio: cuotas que equivalen a un mes)
   function calcularInteresAutomaticoPorBloque(cuotas, frecuencia){
     const bloque = BLOQUE_INTERES_POR_FRECUENCIA[frecuencia];
     if(!bloque || !cuotas || cuotas <= 0) return null;
@@ -17980,7 +17989,15 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
   });
 
   // ---------- Cálculo del plan de pagos ----------
-  const nombresFrecuencia = { diario:'Diario', semanal:'Semanal', quincenal:'Quincenal', mensual:'Mensual' };
+  const nombresFrecuencia = { diario:'Diario', interdiario:'Interdiario', tridiario:'Tridiario', semanal:'Semanal', bisemanal:'Bisemanal', quincenal:'Quincenal', mensual:'Mensual', bimensual:'Bimensual', trimestral:'Trimestral', semestral:'Semestral', anual:'Anual' };
+  // NUEVO (a pedido): cada cuánto cae una cuota según la frecuencia. Las de
+  // días suman días exactos; Mensual y las más largas caen el MISMO día del
+  // mes cada 1, 2, 3, 6 o 12 meses (Mensual sigue igual que siempre).
+  const PASO_FRECUENCIA = {
+    diario:{dias:1}, interdiario:{dias:2}, tridiario:{dias:3}, semanal:{dias:7}, bisemanal:{dias:14}, quincenal:{dias:15},
+    mensual:{meses:1}, bimensual:{meses:2}, trimestral:{meses:3}, semestral:{meses:6}, anual:{meses:12}
+  };
+  function pasoDeFrecuencia(frecuencia){ return PASO_FRECUENCIA[frecuencia] || { meses:1 }; }
 
   // ---------------------------------------------------------------
   // MOTOR DE INTERÉS — ÚNICA fórmula de todo el sistema (2026):
@@ -18013,10 +18030,12 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
 
     for(let i = 1; i <= cuotas; i++){
       const fechaCuota = new Date(fechaInicio);
-      if(frecuencia === 'diario') fechaCuota.setDate(fechaInicio.getDate() + i);
-      else if(frecuencia === 'semanal') fechaCuota.setDate(fechaInicio.getDate() + i * 7);
-      else if(frecuencia === 'quincenal') fechaCuota.setDate(fechaInicio.getDate() + i * 15);
-      else fechaCuota.setMonth(fechaInicio.getMonth() + i); // mensual (por defecto)
+      // CAMBIO (a pedido): mismo cálculo de siempre, generalizado a todas
+      // las frecuencias (días exactos o el mismo día cada N meses). Solo
+      // cambia el paso entre fechas; capital/interés/total no se tocan.
+      const paso = pasoDeFrecuencia(frecuencia);
+      if(paso.dias) fechaCuota.setDate(fechaInicio.getDate() + i * paso.dias);
+      else fechaCuota.setMonth(fechaInicio.getMonth() + i * paso.meses); // mensual (por defecto) y las de meses
 
       plan.push({
         numero: i,
@@ -18066,10 +18085,8 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     return plan.map((cuota, indice)=>{
       let fechaCuota;
       if(dosPorMes) fechaCuota = fechaMismoDiaMesesDespues(indice % 2 === 0 ? primera : segunda, Math.floor(indice / 2));
-      else if(frecuencia === 'diario') fechaCuota = new Date(primera.getFullYear(), primera.getMonth(), primera.getDate() + indice);
-      else if(frecuencia === 'semanal') fechaCuota = new Date(primera.getFullYear(), primera.getMonth(), primera.getDate() + indice * 7);
-      else if(frecuencia === 'quincenal') fechaCuota = new Date(primera.getFullYear(), primera.getMonth(), primera.getDate() + indice * 15);
-      else fechaCuota = fechaMismoDiaMesesDespues(primera, indice);
+      else if(pasoDeFrecuencia(frecuencia).dias) fechaCuota = new Date(primera.getFullYear(), primera.getMonth(), primera.getDate() + indice * pasoDeFrecuencia(frecuencia).dias);
+      else fechaCuota = fechaMismoDiaMesesDespues(primera, indice * pasoDeFrecuencia(frecuencia).meses);
       return { ...cuota, fechaISO: fechaCuota.toISOString(), fechaTexto: formatearFechaCorta(fechaCuota) };
     });
   }
@@ -18101,10 +18118,9 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     }
     const inicio = new Date((f1 || fechaDesembolsoStr) + 'T00:00:00');
     const n = f1 ? i : i + 1;
-    if(frecuencia === 'diario') return new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + n);
-    if(frecuencia === 'semanal') return new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + n * 7);
-    if(frecuencia === 'quincenal') return new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + n * 15);
-    return fechaMismoDiaMesesDespues(inicio, n);
+    const paso = pasoDeFrecuencia(frecuencia); // CAMBIO: todas las frecuencias
+    if(paso.dias) return new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + n * paso.dias);
+    return fechaMismoDiaMesesDespues(inicio, n * paso.meses);
   }
   function pagosCapitalSoloInteres(prestamo){
     return (prestamo.pagos || []).filter(p => p.aplicarA === 'capital');
@@ -18649,7 +18665,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
   // los comprobantes de pago, y el mismo patrón de bottom sheet que
   // el menú de opciones de la cuota (no se modifica ninguno de los dos).
   // ==========================================================
-  const NOMBRES_FRECUENCIA = { diario:'Diario', semanal:'Semanal', quincenal:'Quincenal', mensual:'Mensual' };
+  const NOMBRES_FRECUENCIA = { diario:'Diario', interdiario:'Interdiario', tridiario:'Tridiario', semanal:'Semanal', bisemanal:'Bisemanal', quincenal:'Quincenal', mensual:'Mensual', bimensual:'Bimensual', trimestral:'Trimestral', semestral:'Semestral', anual:'Anual' };
   const compartirPrestamoOverlay = document.getElementById('compartir-prestamo-overlay');
   const compartirPrestamoWrap = document.getElementById('compartir-prestamo-wrap');
   let prestamoParaCompartir = null; // { prestamo, cliente }
