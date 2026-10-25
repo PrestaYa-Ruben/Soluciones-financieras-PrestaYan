@@ -16808,6 +16808,28 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
+  // NUEVO (a pedido): búsqueda de clientes que también mira las NOTAS — la
+  // nota del cliente y las notas de sus préstamos — además del nombre y el
+  // teléfono. Ignora tildes y mayúsculas ("galeria" encuentra "Galería").
+  // La usan todos los buscadores (Clientes, búsqueda global, Préstamos,
+  // Cobros, Movimientos y el selector de cliente de Programar recordatorio).
+  function normalizarBusqueda(texto){ return quitarAcentos(String(texto || '').toLowerCase()).trim(); }
+  function textoNotasCliente(cliente){
+    if(!cliente) return '';
+    const notasPrestamos = (typeof prestamosGuardados !== 'undefined' ? prestamosGuardados : [])
+      .filter(p => p.clienteId === cliente.id && p.nota)
+      .map(p => p.nota).join(' ');
+    return normalizarBusqueda((cliente.notas || '') + ' ' + notasPrestamos);
+  }
+  function clienteCoincideBusqueda(cliente, termino){
+    const t = normalizarBusqueda(termino);
+    if(!t) return true;
+    if(!cliente) return false;
+    return normalizarBusqueda(cliente.nombre).includes(t) ||
+      String(cliente.telefono || '').toLowerCase().includes(t) ||
+      textoNotasCliente(cliente).includes(t);
+  }
+
   function buscarClientesGlobal(termino){
     const t = quitarAcentos(termino.trim().toLowerCase());
     if(!t) return [];
@@ -16822,6 +16844,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     return clientesGuardados.filter(c =>
       quitarAcentos((c.nombre || '').toLowerCase()).includes(t) ||
       quitarAcentos((c.telefono || '').toLowerCase()).includes(t) ||
+      textoNotasCliente(c).includes(t) || // NUEVO: notas del cliente y de sus préstamos
       quitarAcentos((c.ruta || '').toLowerCase()).includes(t) ||
       clientesPorCredito.has(c.id)
     );
@@ -26814,7 +26837,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     const coincide = clientesGuardados.filter(c=>{
       if(cuotasPendientesCliente(c.id).length === 0) return false; // mismo requisito que ya exige abrirFormularioRecordatorio
       if(!q) return true;
-      return (c.nombre || '').toLowerCase().includes(q) || (c.telefono || '').includes(q);
+      return clienteCoincideBusqueda(c, q); // CAMBIO: nombre, teléfono y notas
     });
     selectorClienteRecordatorioLista.innerHTML = '';
     if(coincide.length === 0){
@@ -27280,7 +27303,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     // mostrando solo el día actual, como siempre.
     let items = q ? todosLosRecordatorios() : recordatoriosDelDia(fechaClaveCobrosActual());
     if(q){
-      items = items.filter(item => item.cliente.nombre.toLowerCase().includes(q));
+      items = items.filter(item => clienteCoincideBusqueda(item.cliente, q)); // CAMBIO: nombre, teléfono y notas
     }
     cobrosLista.innerHTML = '';
 
@@ -28440,7 +28463,8 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     if(termino){
       lista = lista.filter(p=>{
         const cliente = clientesGuardados.find(c => c.id === p.clienteId);
-        return cliente && cliente.nombre.toLowerCase().includes(termino);
+        // CAMBIO: nombre, teléfono y notas del cliente o de este préstamo (sin importar tildes)
+        return !!cliente && (clienteCoincideBusqueda(cliente, termino) || normalizarBusqueda(p.nota).includes(normalizarBusqueda(termino)));
       });
     }
 
@@ -28468,7 +28492,8 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     if(termino){
       base = base.filter(p=>{
         const cliente = clientesGuardados.find(c => c.id === p.clienteId);
-        return cliente && cliente.nombre.toLowerCase().includes(termino);
+        // CAMBIO: nombre, teléfono y notas del cliente o de este préstamo (sin importar tildes)
+        return !!cliente && (clienteCoincideBusqueda(cliente, termino) || normalizarBusqueda(p.nota).includes(normalizarBusqueda(termino)));
       });
     }
 
@@ -28754,7 +28779,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
         // TODOS los clientes, no solo el dañado) si algún cliente tenía el
         // campo "nombre" vacío/dañado — ahora usa (c.nombre || '') como
         // respaldo, igual que ya se hacía con c.telefono en la misma línea.
-        const coincideTexto = !termino || (c.nombre || '').toLowerCase().includes(termino) || (c.telefono || '').toLowerCase().includes(termino);
+        const coincideTexto = !termino || clienteCoincideBusqueda(c, termino); // CAMBIO: nombre, teléfono y notas (sin importar tildes)
         const coincideRuta = !rutasFiltroActivas || rutasFiltroActivas.has(c.ruta || '');
         if(!coincideTexto || !coincideRuta) return false;
 
@@ -29556,6 +29581,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
         concepto: 'Préstamo entregado',
         categoria: null,
         cliente: cliente ? cliente.nombre : null,
+        notasBusqueda: cliente ? textoNotasCliente(cliente) : '', // NUEVO: para el buscador
         credito: prestamo.codigo || null
       });
 
@@ -29571,6 +29597,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
             : ('Capital ' + formatearPesos(pago.capitalPagado || 0) + ' · Interés ' + formatearPesos(pago.interesPagado || 0)),
           categoria: null,
           cliente: cliente ? cliente.nombre : null,
+          notasBusqueda: cliente ? textoNotasCliente(cliente) : '', // NUEVO: para el buscador
           credito: prestamo.codigo || null
         });
       });
@@ -29594,7 +29621,9 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
         (m.cliente && m.cliente.toLowerCase().includes(texto)) ||
         (m.credito && m.credito.toLowerCase().includes(texto)) ||
         (m.concepto && m.concepto.toLowerCase().includes(texto)) ||
-        (m.categoria && m.categoria.toLowerCase().includes(texto))
+        (m.categoria && m.categoria.toLowerCase().includes(texto)) ||
+        (m.cliente && normalizarBusqueda(m.cliente).includes(normalizarBusqueda(texto))) || // NUEVO: sin importar tildes
+        (m.notasBusqueda && m.notasBusqueda.includes(normalizarBusqueda(texto)))           // NUEVO: notas del cliente
       );
     }
 
