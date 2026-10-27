@@ -6801,6 +6801,36 @@ body.modo-oscuro .gpd-card{ background:#1B2029; }
 body.modo-oscuro .gpd-titulo, body.modo-oscuro .gpd-valor, body.modo-oscuro .gpd-total-fila strong{ color:#F2F4F8; }
 body.modo-oscuro .gpd-track{ background:#2A3040; }
 body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
+
+/* ==========================================================
+   NUEVO (a pedido): barra de progreso por bloques (uno por cuota) + globo
+   ========================================================== */
+.cuotas-barra{ position:relative; display:flex; gap:4px; padding:4px; margin-top:7px; height:28px; border-radius:999px; background:linear-gradient(180deg,#D9DDE4 0%,#ECEFF3 100%); box-shadow:inset 0 2px 5px rgba(20,30,60,0.22), inset 0 -1px 1px rgba(255,255,255,0.7), 0 1px 0 rgba(255,255,255,0.9); }
+.cuota-bloque{ flex:1 1 0; min-width:0; height:100%; padding:0; border:2px solid transparent; border-radius:999px; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; line-height:1; color:#5E6676; background:linear-gradient(180deg,#FFFFFF 0%,#EDEFF3 100%); box-shadow:0 2px 3px rgba(20,30,60,0.16); cursor:pointer; transition:transform .1s ease; -webkit-tap-highlight-color:transparent; outline:none; }
+.cuota-bloque:focus, .cuota-bloque:focus-visible{ outline:none !important; } /* CAMBIO: sin la raya azul de foco */
+.cuota-bloque{ background-origin:border-box !important; background-repeat:no-repeat !important; } /* CAMBIO: el degradado ya no se repite en el borde (esa era la raya oscura de arriba) */
+.cuota-bloque span{ pointer-events:none; }
+.cuota-bloque:active{ transform:scale(0.94); }
+.cuota-bloque.pagada{ background:linear-gradient(180deg,#8FD9A3 0%,#5CB070 55%,#3F9455 100%); color:#FFFFFF; text-shadow:0 1px 1px rgba(20,60,30,0.35); box-shadow:0 2px 4px rgba(30,90,45,0.35); }
+.cuota-bloque.parcial{ background:linear-gradient(90deg,#8DB4F5 0, #3F6FD1 var(--avance), #F3F4F7 var(--avance)); color:#1E3F8A; } /* CAMBIO (a pedido): lo abonado va en azul */
+.cuota-bloque.vencida{ background:linear-gradient(180deg,#FBE1E2 0%,#F2C6C8 100%); color:#B4232A; box-shadow:0 2px 3px rgba(150,40,45,0.18); }
+.cuota-bloque.parcial.vencida{ background:linear-gradient(90deg,#8DB4F5 0, #3F6FD1 var(--avance), #F4CDCF var(--avance)); }
+.cuota-bloque.activo{ border-color:#1E2433; }
+.cuotas-barra.muchas{ gap:2px; }
+.cuotas-barra.muchas .cuota-bloque span{ display:none; }
+.cuota-globo{ position:absolute; bottom:calc(100% + 12px); left:0; z-index:20; min-width:132px; padding:9px 14px 10px; border-radius:16px; background:#232C5E; color:#FFFFFF; box-shadow:0 10px 24px rgba(20,30,70,0.30); white-space:nowrap; text-align:left; animation:globoCuotaEntrar .16s ease-out; pointer-events:auto; }
+@keyframes globoCuotaEntrar{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
+.cuota-globo-titulo{ font-size:13px; font-weight:500; color:#BFC7EA; }
+.cuota-globo-valor{ font-size:19px; font-weight:800; letter-spacing:-0.3px; margin:1px 0 2px; }
+.cuota-globo-estado{ font-size:13px; font-weight:600; }
+.cuota-globo-estado.ok{ color:#86D99A; }
+.cuota-globo-estado.medio{ color:#A9C4FF; } /* CAMBIO: abono en azul, igual que el bloque */
+.cuota-globo-estado.mal{ color:#FF9A9F; }
+.cuota-globo-estado.pendiente{ color:#C9CFEA; }
+.cuota-globo-flecha{ position:absolute; bottom:-7px; width:14px; height:14px; margin-left:-7px; background:#232C5E; transform:rotate(45deg); border-radius:2px; }
+body.modo-oscuro .cuotas-barra{ background:#2A3040; }
+body.modo-oscuro .cuota-bloque{ background:#1F2530; color:#9BA4B4; }
+body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
 </style>
 
 </head>
@@ -21811,6 +21841,80 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
     return grupo.findIndex(p => p.id === prestamo.id) + 1;
   }
 
+  // ==========================================================
+  // NUEVO (a pedido, con imagen de referencia): barra de progreso dividida
+  // en un bloque por cuota (tarjeta de préstamo y Detalle del Préstamo).
+  // Verde = pagada, verde parcial = con abono, rojo = vencida, gris =
+  // pendiente. Al tocar un bloque se abre un globo con la información de
+  // esa cuota; al tocar el mismo bloque otra vez (o fuera) se cierra.
+  // Solo lee datos (estaCuotaPagada, sumaAbonadaCuota, cuotaVencida…).
+  // ==========================================================
+  const MESES_GLOBO_CUOTA = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  function fechaGloboCuota(fecha){ const d = new Date(fecha); return d.getDate() + '-' + MESES_GLOBO_CUOTA[d.getMonth()]; }
+  function htmlBarraCuotas(prestamo){
+    const plan = prestamo.plan || [];
+    if(!plan.length) return '<div class="loan-progress-track"><div class="loan-progress-fill" style="width:0%"></div></div>';
+    const bloques = plan.map(c=>{
+      let clase = 'pendiente', estilo = '';
+      if(estaCuotaPagada(prestamo, c.numero)) clase = 'pagada';
+      else{
+        const abonado = sumaAbonadaCuota(prestamo, c.numero);
+        if(abonado > 0 && c.total > 0){ clase = 'parcial'; estilo = ' style="--avance:' + Math.min(100, Math.round(abonado / c.total * 100)) + '%"'; }
+        if(cuotaVencida(prestamo, c)) clase += ' vencida';
+      }
+      return '<button type="button" class="cuota-bloque ' + clase + '"' + estilo + ' data-prestamo-id="' + prestamo.id + '" data-cuota="' + c.numero + '" aria-label="Cuota ' + c.numero + '"><span>' + c.numero + '</span></button>';
+    }).join('');
+    return '<div class="cuotas-barra' + (plan.length > 14 ? ' muchas' : '') + '">' + bloques + '</div>';
+  }
+  function textoGloboCuota(prestamo, cuota){
+    if(estaCuotaPagada(prestamo, cuota.numero)){
+      const f = fechaPagoCuota(prestamo, cuota.numero);
+      return { clase:'ok', texto: f ? 'Pagado el ' + fechaGloboCuota(f) : 'Pagada' };
+    }
+    const abonado = sumaAbonadaCuota(prestamo, cuota.numero);
+    const vencida = cuotaVencida(prestamo, cuota);
+    if(abonado > 0) return { clase: vencida ? 'mal' : 'medio', texto: 'Abonado ' + formatearPesos(Math.round(abonado)) + ' · faltan ' + formatearPesos(Math.round(Math.max(cuota.total - abonado, 0))) };
+    if(vencida) return { clase:'mal', texto:'Venció el ' + fechaGloboCuota(cuota.fechaISO) };
+    return { clase:'pendiente', texto:'Vence el ' + fechaGloboCuota(cuota.fechaISO) };
+  }
+  function cerrarGloboCuota(){
+    document.querySelectorAll('.cuota-globo').forEach(g => g.remove());
+    document.querySelectorAll('.cuota-bloque.activo').forEach(b => b.classList.remove('activo'));
+  }
+  // Se escucha en fase de captura para que tocar un bloque NO abra el
+  // detalle del préstamo (la tarjeta entera también es tocable).
+  document.addEventListener('click', (e)=>{
+    const bloque = e.target.closest && e.target.closest('.cuota-bloque');
+    if(!bloque){
+      if(!(e.target.closest && e.target.closest('.cuota-globo'))) cerrarGloboCuota();
+      return;
+    }
+    e.stopPropagation();
+    e.preventDefault();
+    const yaAbierto = bloque.classList.contains('activo');
+    cerrarGloboCuota();
+    if(yaAbierto) return; // segundo toque al mismo bloque: se cierra
+    const prestamo = prestamosGuardados.find(p => String(p.id) === bloque.dataset.prestamoId);
+    const cuota = prestamo && (prestamo.plan || []).find(c => String(c.numero) === bloque.dataset.cuota);
+    if(!cuota) return;
+    const barra = bloque.parentElement;
+    const info = textoGloboCuota(prestamo, cuota);
+    const globo = document.createElement('div');
+    globo.className = 'cuota-globo';
+    globo.innerHTML = '<div class="cuota-globo-titulo"></div><div class="cuota-globo-valor"></div><div class="cuota-globo-estado ' + info.clase + '"></div><i class="cuota-globo-flecha"></i>';
+    globo.querySelector('.cuota-globo-titulo').textContent = 'Cuota ' + cuota.numero;
+    globo.querySelector('.cuota-globo-valor').textContent = formatearPesos(Math.round(cuota.total));
+    globo.querySelector('.cuota-globo-estado').textContent = info.texto;
+    barra.appendChild(globo);
+    bloque.classList.add('activo');
+    // Centrado sobre el bloque, sin salirse de la barra
+    const anchoBarra = barra.clientWidth, anchoGlobo = globo.offsetWidth;
+    const centro = bloque.offsetLeft + bloque.offsetWidth / 2;
+    const izquierda = Math.max(0, Math.min(anchoBarra - anchoGlobo, centro - anchoGlobo / 2));
+    globo.style.left = izquierda + 'px';
+    globo.querySelector('.cuota-globo-flecha').style.left = (centro - izquierda) + 'px';
+  }, true);
+
   function crearTarjetaPrestamo(prestamo, mostrarCliente){
     // Cuotas realmente completas (no cuenta registros de pago sueltos: un
     // recargo por mora o un abono parcial no deben inflar el progreso)
@@ -21886,9 +21990,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
         <span>Progreso</span>
         <span>${cuotasPagadas} / ${prestamo.cuotas} cuotas <span class="loan-progress-porcentaje">· ${Math.round(porcentajeProgreso)}%</span></span>
       </div>
-      <div class="loan-progress-track">
-        <div class="loan-progress-fill" style="width:${porcentajeProgreso}%"></div>
-      </div>
+      ${htmlBarraCuotas(prestamo)}
       ${prestamo.nota ? `
       <div class="loan-note">
         <div class="loan-note-icono">
@@ -22466,9 +22568,7 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
             <span>Progreso</span>
             <span>${cuotasPagadas} / ${prestamo.cuotas} cuotas (${porcentaje}%)</span>
           </div>
-          <div class="loan-progress-track">
-            <div class="loan-progress-fill" style="width:${porcentaje}%"></div>
-          </div>
+          ${htmlBarraCuotas(prestamo)}
         </div>
 
         <div class="loan-detail-footer-date">Iniciado: ${fechaInicioTexto}${prestamo.estado === 'finalizado' && prestamo.fechaFinalizacion ? ' · Finalizado: ' + formatearFechaCorta(new Date(prestamo.fechaFinalizacion)) : ''}</div>
