@@ -8767,7 +8767,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
 
   <section class="detail-body">
     <div class="card pago-detalle-card">
-      <div class="pago-detalle-marca" id="detalle-pago-marca"><span class="brand-navy">Presta</span><span class="brand-green">Ya</span></div>
+      <div class="pago-detalle-marca" id="detalle-pago-marca"><span class="brand-navy">Presta</span><span class="brand-green">Yan</span></div>
 
       <div class="pago-detalle-monto" id="detalle-pago-monto">$0</div>
       <!-- NUEVO: "Puntualidad del pago" — controlada por el interruptor
@@ -9848,7 +9848,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
       <div class="icon-container green"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg></div>
       <div class="info">
         <div class="title">Plantilla de recibo</div>
-        <div class="subtitle" id="subtitulo-plantilla-recibo">PrestaYa</div>
+        <div class="subtitle" id="subtitulo-plantilla-recibo">PrestaYan</div>
       </div>
       <div class="trailing chevron">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -10230,7 +10230,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
 
       <div class="form-field">
         <label class="field-label" for="input-nombre-negocio">Nombre del negocio</label>
-        <input class="field-input" id="input-nombre-negocio" type="text" placeholder="Ej: PrestaYa" maxlength="30">
+        <input class="field-input" id="input-nombre-negocio" type="text" placeholder="Ej: PrestaYan" maxlength="30">
       </div>
 
       <div class="form-field sin-margen">
@@ -14114,7 +14114,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
   const COLOR_ENCABEZADO_KEY = 'prestapp_recibo_color_encabezado';
   const RECIBO_MOSTRAR_METODO_KEY = 'prestapp_recibo_mostrar_metodo';
   const RECIBO_MOSTRAR_CUOTA_KEY = 'prestapp_recibo_mostrar_cuota';
-  let nombreNegocioEnMemoria = 'PrestaYa';
+  let nombreNegocioEnMemoria = 'PrestaYan';
   let notaPieEnMemoria = '';
   let colorEncabezadoEnMemoria = '#002060';
   let reciboMostrarMetodoEnMemoria = true;
@@ -14123,7 +14123,10 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
   function obtenerNombreNegocio(){
     try{
       const guardado = localStorage.getItem(NOMBRE_NEGOCIO_KEY);
-      return guardado && guardado.trim() ? guardado.trim() : 'PrestaYa';
+      // CAMBIO (a pedido): la marca ahora es PrestaYan; si quedó guardado el
+      // nombre viejo por defecto ("PrestaYa"), se muestra como PrestaYan.
+      const limpio = guardado && guardado.trim() ? guardado.trim() : 'PrestaYan';
+      return /^presta\s?ya$/i.test(limpio) ? 'PrestaYan' : limpio;
     }catch(err){ return nombreNegocioEnMemoria; }
   }
   function obtenerNotaPieRecibo(){
@@ -14224,7 +14227,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
   });
 
   document.getElementById('btn-guardar-plantilla-recibo').addEventListener('click', ()=>{
-    const nombre = inputNombreNegocio.value.trim() || 'PrestaYa';
+    const nombre = inputNombreNegocio.value.trim() || 'PrestaYan';
     const nota = inputNotaPieRecibo.value.trim();
     try{
       localStorage.setItem(NOMBRE_NEGOCIO_KEY, nombre);
@@ -15980,7 +15983,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     ctx.fillText('Presta', padX, 40);
     const anchoPresta = ctx.measureText('Presta').width;
     ctx.fillStyle = '#18C968';
-    ctx.fillText('Ya', padX + anchoPresta, 40);
+    ctx.fillText('Yan', padX + anchoPresta, 40);
 
     ctx.strokeStyle = '#E5E8EF';
     ctx.lineWidth = 1;
@@ -19452,6 +19455,10 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
       ['Frecuencia de pago', NOMBRES_FRECUENCIA[prestamo.frecuencia] || prestamo.frecuencia, 'Modalidad de pago']
       // CAMBIO (a pedido): se quitó la fila "Estado" (Activo/Finalizado) de este recibo.
     ];
+    // NUEVO (a pedido): si el cliente tiene más de un crédito, "Crédito #N"
+    // junto al Cliente (misma numeración que el resto de recibos).
+    const nCreditoResumen = numeroCreditoParaRecibo(prestamo);
+    if(nCreditoResumen) filas.splice(1, 0, ['Crédito', '#' + nCreditoResumen]);
     // NUEVO: a pedido — documento del cliente (bajo su nombre) y número de
     // solicitud (encima de "CRÉDITO OTORGADO"). Solo se dibujan si existen.
     const documentoCliente = cliente && cliente.documento ? String(cliente.documento).trim() : '';
@@ -19630,7 +19637,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     // A pedido: nuevo pie — "<Negocio>, Soluciones financieras" y debajo
     // "Solución efectiva a sus necesidades". El bloque (escudo + textos)
     // se centra según el ancho real del texto.
-    const tituloPieResumen = (String(obtenerNombreNegocio() || '').trim() || 'PrestaYa') + ', Soluciones financieras';
+    const tituloPieResumen = (String(obtenerNombreNegocio() || '').trim() || 'PrestaYan') + ', Soluciones financieras';
     const subtituloPieResumen = 'Solución efectiva a sus necesidades';
     ctx.font = 'bold 17px Arial, sans-serif';
     let anchoTextoPieResumen = ctx.measureText(tituloPieResumen).width;
@@ -20124,7 +20131,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     // ---- Encabezado: logo "PrestaYa" (Presta azul oscuro + Ya verde) ----
     ctx.textAlign = 'center';
     ctx.font = '900 27px Arial, sans-serif';
-    const textoPresta = 'Presta', textoYa = 'Ya';
+    const textoPresta = 'Presta', textoYa = 'Yan';
     const anchoPresta = ctx.measureText(textoPresta).width;
     const anchoYa = ctx.measureText(textoYa).width;
     const inicioX = anchoTicket / 2 - (anchoPresta + anchoYa) / 2;
@@ -21834,8 +21841,11 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     if(!prestamo) return null;
     const n = numeroCreditoCliente(prestamo);
     if(n) return n;
+    // CAMBIO (a pedido): antes solo contaba si el cliente tenía 2+ créditos
+    // ACTIVOS. Ahora, si tiene más de un crédito en total (aunque los otros
+    // ya estén finalizados), se numeran todos del más antiguo al más reciente.
     const grupo = prestamosGuardados
-      .filter(p => p.clienteId === prestamo.clienteId && (p.estado === 'activo' || p.id === prestamo.id))
+      .filter(p => p.clienteId === prestamo.clienteId)
       .sort((a, b)=> (a.fecha || '').localeCompare(b.fecha || '') || (a.id - b.id));
     if(grupo.length < 2) return null;
     return grupo.findIndex(p => p.id === prestamo.id) + 1;
@@ -24751,10 +24761,11 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     // fila Cuota está oculta, va junto al Concepto o en su propia fila.
     const numeroCreditoRecibo = numeroCreditoParaRecibo(prestamo); // misma lógica de siempre, ahora compartida
     if(numeroCreditoRecibo){
-      const textoCredito = 'Crédito #' + numeroCreditoRecibo;
-      const filaDestino = filas.find(f => f && f[0] === 'Cuota') || filas.find(f => f && f[0] === 'Concepto');
-      if(filaDestino) filaDestino[1] = filaDestino[1] + ' · ' + textoCredito;
-      else filas.splice(1, 0, ['Crédito', '#' + numeroCreditoRecibo]);
+      // CAMBIO (a pedido): antes se pegaba al final de "Cuota"/"Concepto" y en
+      // los abonos quedaba cortado ("Crédito #..."). Ahora va siempre en su
+      // propia fila "Crédito #N", justo debajo del Cliente.
+      const posCliente = filas.findIndex(f => f && f[0] === 'Cliente');
+      filas.splice(posCliente + 1, 0, ['Crédito', '#' + numeroCreditoRecibo]);
     }
     // NUEVO: a pedido — fila "Descuento aplicado": lo descontado a las
     // cuotas que cubre este pago; si con este pago el crédito quedó
@@ -24906,12 +24917,12 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     // dibuja como la marca: "Presta" en blanco con el asta de la P en verde
     // y "Ya" en verde. Cualquier otro nombre va en blanco, ajustado al ancho.
     (function dibujarNombreNegocio(){
-      const nombre = String(obtenerNombreNegocio() || '').trim() || 'PrestaYa';
+      const nombre = String(obtenerNombreNegocio() || '').trim() || 'PrestaYan';
       const xNombre = 36, yBase = 60, anchoMax = 330;
       let tam = 44;   // A pedido: nombre del negocio más pequeño (antes 56)
       ctx.font = fuente(800, tam, false);   // A pedido: nombre derecho (sin cursiva)
       while(ctx.measureText(nombre).width > anchoMax && tam > 24){ tam -= 2; ctx.font = fuente(800, tam, false); }
-      const marca = nombre.match(/^(presta)\s?(ya)$/i);
+      const marca = nombre.match(/^(presta)\s?(yan?)$/i);
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
       if(!marca){
@@ -25481,8 +25492,8 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     // no tendría sentido partirlo en 2 colores fijos, así que va en texto plano.
     const marcaPagoDetalle = document.getElementById('detalle-pago-marca');
     const nombreNegocioPagoDetalle = obtenerNombreNegocio();
-    if(nombreNegocioPagoDetalle === 'PrestaYa'){
-      marcaPagoDetalle.innerHTML = '<span class="brand-navy">Presta</span><span class="brand-green">Ya</span>';
+    if(nombreNegocioPagoDetalle === 'PrestaYan'){
+      marcaPagoDetalle.innerHTML = '<span class="brand-navy">Presta</span><span class="brand-green">Yan</span>';
     }else{
       marcaPagoDetalle.textContent = nombreNegocioPagoDetalle;
     }
@@ -25636,7 +25647,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     }
 
     const nombreNegocio = obtenerNombreNegocio();
-    const esMarcaPrestaYa = nombreNegocio === 'PrestaYa';
+    const esMarcaPrestaYa = nombreNegocio === 'PrestaYan';
     const notaPie = obtenerNotaPieRecibo();
     const anchoTextoFila = anchoCard - padX * 2 - tamIcono - 14;
 
@@ -25686,7 +25697,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     ctx.textAlign = 'center';
     if(esMarcaPrestaYa){
       ctx.font = '700 34px Arial, sans-serif';
-      const tPresta = 'Presta', tYa = 'Ya';
+      const tPresta = 'Presta', tYa = 'Yan';
       const wPresta = ctx.measureText(tPresta).width;
       const wYa = ctx.measureText(tYa).width;
       const inicioX = anchoCard / 2 - (wPresta + wYa) / 2;
@@ -28229,7 +28240,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     ctx.fillRect(cardX, cardY, anchoCard, alturaHeader);
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 24px Arial, sans-serif';
-    ctx.fillText('PrestaYa', cardX + 26, cardY + 44);
+    ctx.fillText(obtenerNombreNegocio(), cardX + 26, cardY + 44);
     ctx.font = '14px Arial, sans-serif';
     ctx.fillText('Recibo de pago · ' + numeroRecibo, cardX + 26, cardY + 68);
 
