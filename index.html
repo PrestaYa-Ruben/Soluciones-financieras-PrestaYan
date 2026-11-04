@@ -21841,11 +21841,11 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     if(!prestamo) return null;
     const n = numeroCreditoCliente(prestamo);
     if(n) return n;
-    // CAMBIO (a pedido): antes solo contaba si el cliente tenía 2+ créditos
-    // ACTIVOS. Ahora, si tiene más de un crédito en total (aunque los otros
-    // ya estén finalizados), se numeran todos del más antiguo al más reciente.
+    // CAMBIO (a pedido): los créditos ya pagados (en historial) NO cuentan.
+    // Solo se numeran los créditos activos del cliente; el crédito de este
+    // recibo se incluye aunque se haya finalizado con este mismo pago.
     const grupo = prestamosGuardados
-      .filter(p => p.clienteId === prestamo.clienteId)
+      .filter(p => p.clienteId === prestamo.clienteId && (p.estado === 'activo' || p.id === prestamo.id))
       .sort((a, b)=> (a.fecha || '').localeCompare(b.fecha || '') || (a.id - b.id));
     if(grupo.length < 2) return null;
     return grupo.findIndex(p => p.id === prestamo.id) + 1;
