@@ -21798,6 +21798,17 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     if(estaCuotaPagada(prestamo, cuota.numero)) return false;
     return diasDeAtraso(cuota) > 0;
   }
+  // NUEVO (a pedido): texto "Cuotas atrasadas" para recibos y comprobantes.
+  // Solo lee contarCuotasVencidas (no cambia ningún cálculo).
+  function textoCuotasAtrasadasRecibo(prestamo){
+    const n = prestamo ? contarCuotasVencidas(prestamo) : 0;
+    return n === 0 ? 'Ninguna, al día' : n + (n === 1 ? ' cuota' : ' cuotas');
+  }
+  // NUEVO (a pedido): el dato "Cuotas atrasadas" va en rojo cuando hay atraso
+  const ROJO_CUOTAS_ATRASADAS = '#D32F2F';
+  function esFilaConAtraso(etiqueta, valor){
+    return etiqueta === 'Cuotas atrasadas' && !/^Ninguna/.test(String(valor));
+  }
   function contarCuotasVencidas(prestamo){
     return (prestamo.plan || []).filter(c => cuotaVencida(prestamo, c)).length;
   }
@@ -24623,6 +24634,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     if(etiqueta === 'Descuento aplicado') return 'valor';
     if(etiqueta === 'Modalidad de pago') return 'repetir'; // CORREGIDO: antes 'modalidad', dibujaba lo mismo que 'calendario'
     if(etiqueta === 'Estado') return 'estado';
+    if(etiqueta === 'Cuotas atrasadas') return 'calendario'; // NUEVO (a pedido)
     return 'documento';
   }
 
@@ -24766,6 +24778,13 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
       // propia fila "Crédito #N", justo debajo del Cliente.
       const posCliente = filas.findIndex(f => f && f[0] === 'Cliente');
       filas.splice(posCliente + 1, 0, ['Crédito', '#' + numeroCreditoRecibo]);
+    }
+    // NUEVO (a pedido): número de cuotas atrasadas, después de Cuota/Concepto
+    {
+      let posAtraso = -1;
+      filas.forEach((f, i)=>{ if(f && (f[0] === 'Cuota' || f[0] === 'Concepto')) posAtraso = i; });
+      if(posAtraso < 0) posAtraso = filas.findIndex(f => f && (f[0] === 'Crédito' || f[0] === 'Cliente'));
+      filas.splice(posAtraso + 1, 0, ['Cuotas atrasadas', textoCuotasAtrasadasRecibo(prestamo)]);
     }
     // NUEVO: a pedido — fila "Descuento aplicado": lo descontado a las
     // cuotas que cubre este pago; si con este pago el crédito quedó
@@ -25145,7 +25164,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
       ctx.fillText(etiquetaAjustada.texto, xTextoFila, yIcono + 20);
 
       const valorAjustado = ajustarTextoAAncho(String(fila[1]), 24, 16, 700, anchoTextoFila);
-      ctx.fillStyle = AZUL_OSCURO;
+      ctx.fillStyle = esFilaConAtraso(fila[0], fila[1]) ? ROJO_CUOTAS_ATRASADAS : AZUL_OSCURO;
       ctx.font = fuente(700, valorAjustado.tam);
       ctx.fillText(valorAjustado.texto, xTextoFila, yIcono + 49);
 
@@ -25632,6 +25651,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
       const textoCuota = esAbono ? 'Abono' : cuotasPagadasPrestamo(prestamo) + ' de ' + prestamo.cuotas;
       filas.push(['Cuota', textoCuota]);
     }
+    filas.push(['Cuotas atrasadas', textoCuotasAtrasadasRecibo(prestamo)]); // NUEVO (a pedido)
     if(obtenerReciboMostrarMetodo()){
       filas.push(['Método de pago', nombresMetodoPago[pago.metodoPago] || pago.metodoPago || 'Efectivo']);
     }
@@ -25747,7 +25767,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
       ctx.fillStyle = colorGris;
       ctx.fillText(etiqueta, xTexto, yTextoBase + 11);
       ctx.font = '600 15.5px ' + FUENTE;
-      ctx.fillStyle = colorOscuro;
+      ctx.fillStyle = esFilaConAtraso(etiqueta, valor) ? ROJO_CUOTAS_ATRASADAS : colorOscuro;
       lineasPorFila[i].forEach((linea, li)=>{
         ctx.fillText(linea, xTexto, yTextoBase + 11 + 2 + 15.5 + li * ALTO_LINEA_VALOR);
       });
@@ -25945,6 +25965,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
       texto += '\nCuota #' + cuota.numero;
     }
     texto += '\nValor: ' + formatearPesos(pago.monto);
+    texto += '\nCuotas atrasadas: ' + textoCuotasAtrasadasRecibo(prestamo); // NUEVO (a pedido)
     if(obtenerReciboMostrarMetodo()){
       texto += '\nMétodo de pago: ' + (nombresMetodoPago[pago.metodoPago] || pago.metodoPago);
     }
@@ -28195,6 +28216,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     if(prestamoRef){
       filas.push(['Monto del préstamo', formatearPesos(prestamoRef.valor)]);
       filas.push(['Saldo pendiente', formatearPesos(saldoPendienteRecibo(prestamoRef))]);
+      filas.push(['Cuotas atrasadas', textoCuotasAtrasadasRecibo(prestamoRef)]); // NUEVO (a pedido)
       filas.push(['Modalidad de pago', NOMBRES_FRECUENCIA[prestamoRef.frecuencia] || prestamoRef.frecuencia]);
       filas.push(['Estado del crédito', prestamoRef.estado === 'finalizado' ? 'Finalizado' : 'Activo']);
     }
@@ -28254,7 +28276,7 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
       ctx.fillStyle = '#7B8794';
       ctx.font = '14px Arial, sans-serif';
       ctx.fillText(label, cardX + 26, y);
-      ctx.fillStyle = '#151A23';
+      ctx.fillStyle = esFilaConAtraso(label, valor) ? ROJO_CUOTAS_ATRASADAS : '#151A23';
       ctx.font = 'bold 18px Arial, sans-serif';
       ctx.fillText(String(valor), cardX + 26, y + 24);
       ctx.strokeStyle = '#EDF0F4';
