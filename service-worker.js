@@ -1,10 +1,16 @@
 // Service worker de PrestaYan: permite instalar la app y abrirla sin conexión.
 // Al subir una versión nueva, cambia el número de CACHE para forzar la actualización.
-const CACHE = 'prestayan-v35';
+const CACHE = 'prestayan-v36';
 const ARCHIVOS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
+  // CAMBIO: la versión nueva queda en espera hasta que se toque "Actualizar"
+  // en el aviso de la app (la primera instalación se activa sola).
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)));
+});
+
+self.addEventListener('message', e => {
+  if (e.data && e.data.tipo === 'ACTUALIZAR') self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {

@@ -6827,6 +6827,20 @@ body.modo-oscuro .gpd-pie{ border-color:#2A3040; }
 .cuota-globo-estado.medio{ color:#A9C4FF; } /* CAMBIO: abono en azul, igual que el bloque */
 .cuota-globo-estado.mal{ color:#FF9A9F; }
 .cuota-globo-estado.pendiente{ color:#C9CFEA; }
+.cuota-globo-accion{ display:flex; align-items:center; gap:5px; margin-top:7px; padding-top:7px; border-top:1px solid rgba(255,255,255,0.16); font-size:12.5px; font-weight:700; color:#FFFFFF; } /* NUEVO (a pedido) */
+.cuota-globo-accion svg{ width:14px; height:14px; flex:0 0 auto; }
+.cuota-globo{ cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.cuota-globo:active{ filter:brightness(1.12); }
+/* NUEVO (a pedido): aviso de nueva actualización de la app */
+.aviso-actualizacion{ position:fixed; left:12px; right:12px; top:calc(env(safe-area-inset-top, 0px) + 12px); z-index:100000; display:flex; align-items:center; gap:12px; padding:12px 12px 12px 14px; border-radius:18px; background:#1B2559; color:#FFFFFF; box-shadow:0 14px 34px rgba(15,23,60,0.35); font-family:inherit; animation:avisoActBajar .28s ease-out; max-width:520px; margin:0 auto; }
+@keyframes avisoActBajar{ from{ transform:translateY(-130%); opacity:0; } to{ transform:none; opacity:1; } }
+.aviso-actualizacion-icono{ flex:0 0 38px; width:38px; height:38px; border-radius:12px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; }
+.aviso-actualizacion-icono svg{ width:20px; height:20px; }
+.aviso-actualizacion-texto{ flex:1 1 auto; min-width:0; line-height:1.25; }
+.aviso-actualizacion-texto b{ display:block; white-space:nowrap; font-size:14.5px; font-weight:800; }
+.aviso-actualizacion-texto span{ font-size:12.5px; color:#C9D0F0; }
+.aviso-actualizacion-btn{ flex:0 0 auto; border:none; border-radius:999px; padding:10px 16px; background:#2FB45A; color:#FFFFFF; font-size:14px; font-weight:800; font-family:inherit; cursor:pointer; }
+.aviso-actualizacion-cerrar{ flex:0 0 auto; width:28px; height:28px; border:none; background:transparent; color:#C9D0F0; font-size:20px; line-height:1; cursor:pointer; padding:0; }
 .cuota-globo-flecha{ position:absolute; bottom:-7px; width:14px; height:14px; margin-left:-7px; background:#232C5E; transform:rotate(45deg); border-radius:2px; }
 body.modo-oscuro .cuotas-barra{ background:#2A3040; }
 body.modo-oscuro .cuota-bloque{ background:#1F2530; color:#9BA4B4; }
@@ -21898,6 +21912,34 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     if(vencida) return { clase:'mal', texto:'Venció el ' + fechaGloboCuota(cuota.fechaISO) };
     return { clase:'pendiente', texto:'Vence el ' + fechaGloboCuota(cuota.fechaISO) };
   }
+  // NUEVO (a pedido): acción del globo. Usa las mismas funciones de siempre:
+  // el menú "Ver / Compartir imagen" del comprobante de la cuota (igual que
+  // el ícono de compartir en la lista de cuotas) y abrirAgregarAbono().
+  function accionGloboCuota(prestamoId, numeroCuota, accion){
+    const prestamo = prestamosGuardados.find(p => String(p.id) === String(prestamoId));
+    const cuota = prestamo && (prestamo.plan || []).find(c => String(c.numero) === String(numeroCuota));
+    cerrarGloboCuota();
+    if(!prestamo || !cuota) return;
+    if(accion === 'compartir'){
+      const canvas = generarCanvasComprobante(prestamo, cuota, null);
+      if(!canvas){ alert('No se pudo generar el comprobante. Intenta de nuevo.'); return; }
+      abrirMenuAbonoRegistrado({
+        canvas,
+        nombreArchivo: 'comprobante-' + (prestamo.codigo || 'pago') + '-cuota' + cuota.numero + '.png',
+        total: sumaAbonadaCuota(prestamo, cuota.numero),
+        titulo: 'Comprobante · Cuota ' + cuota.numero,
+        alCompartir: ()=> compartirComprobanteCuota(prestamo, cuota)
+      });
+    }else{
+      // Se ocultan las pantallas visibles (Clientes / detalle del cliente…)
+      // para que solo quede el formulario de abono, igual que desde el detalle.
+      const visibles = [...document.querySelectorAll('.app')].filter(el => el.style.display !== 'none' && getComputedStyle(el).display !== 'none');
+      abrirAgregarAbono(prestamo, cuota.numero);
+      if(screenAgregarAbono.style.display === 'block'){
+        visibles.forEach(el => { if(el !== screenAgregarAbono) el.style.display = 'none'; });
+      }
+    }
+  }
   function cerrarGloboCuota(){
     document.querySelectorAll('.cuota-globo').forEach(g => g.remove());
     document.querySelectorAll('.cuota-bloque.activo').forEach(b => b.classList.remove('activo'));
@@ -21905,6 +21947,14 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
   // Se escucha en fase de captura para que tocar un bloque NO abra el
   // detalle del préstamo (la tarjeta entera también es tocable).
   document.addEventListener('click', (e)=>{
+    // NUEVO (a pedido): toque sobre el globo abierto → su acción
+    const globoTocado = e.target.closest && e.target.closest('.cuota-globo');
+    if(globoTocado){
+      e.stopPropagation();
+      e.preventDefault();
+      if(globoTocado.dataset.accion) accionGloboCuota(globoTocado.dataset.prestamoId, globoTocado.dataset.cuota, globoTocado.dataset.accion);
+      return;
+    }
     const bloque = e.target.closest && e.target.closest('.cuota-bloque');
     if(!bloque){
       if(!(e.target.closest && e.target.closest('.cuota-globo'))) cerrarGloboCuota();
@@ -21926,6 +21976,21 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     globo.querySelector('.cuota-globo-titulo').textContent = 'Cuota ' + cuota.numero;
     globo.querySelector('.cuota-globo-valor').textContent = formatearPesos(Math.round(cuota.total));
     globo.querySelector('.cuota-globo-estado').textContent = info.texto;
+    // NUEVO (a pedido): tocar el globo — cuota pagada: compartir comprobante;
+    // cuota sin pagar: ir directo al formulario de abono / pagar cuota.
+    const pagadaGlobo = info.clase === 'ok';
+    const prestamoActivoGlobo = prestamo.estado !== 'finalizado';
+    if(pagadaGlobo || prestamoActivoGlobo){
+      globo.dataset.prestamoId = String(prestamo.id);
+      globo.dataset.cuota = String(cuota.numero);
+      globo.dataset.accion = pagadaGlobo ? 'compartir' : 'pagar';
+      const accion = document.createElement('div');
+      accion.className = 'cuota-globo-accion';
+      accion.innerHTML = pagadaGlobo
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span>Compartir comprobante</span>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10.5h19M7 15h3"/></svg><span>' + (sumaAbonadaCuota(prestamo, cuota.numero) > 0 ? 'Abonar / pagar cuota' : 'Pagar cuota') + '</span>';
+      globo.insertBefore(accion, globo.querySelector('.cuota-globo-flecha'));
+    }
     barra.appendChild(globo);
     bloque.classList.add('activo');
     // Centrado sobre el bloque, sin salirse de la barra
@@ -32124,12 +32189,58 @@ body.modo-oscuro .cuota-bloque.activo{ border-color:#FFFFFF; }
     try{ revisarCambioDeDia(true); }catch(err){ console.warn('Solo intereses:', err); }
   })();
 
+  // NUEVO (a pedido): aviso "Nueva actualización · Actualizar". Cuando se
+  // sube una versión nueva, el service worker nuevo queda en espera y se
+  // muestra el aviso; al tocar "Actualizar" se activa y la app se recarga.
+  function mostrarAvisoActualizacion(registro){
+    if(document.getElementById('aviso-actualizacion')) return;
+    const aviso = document.createElement('div');
+    aviso.id = 'aviso-actualizacion';
+    aviso.className = 'aviso-actualizacion';
+    aviso.setAttribute('role', 'alert');
+    aviso.innerHTML = '<div class="aviso-actualizacion-icono"><svg viewBox="0 0 24 24" fill="none" stroke="#7BE39A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></div>' +
+      '<div class="aviso-actualizacion-texto"><b>Nueva actualización</b><span>Ya está lista para instalar</span></div>' +
+      '<button type="button" class="aviso-actualizacion-btn">Actualizar</button>' +
+      '<button type="button" class="aviso-actualizacion-cerrar" aria-label="Cerrar">×</button>';
+    document.body.appendChild(aviso);
+    aviso.querySelector('.aviso-actualizacion-cerrar').addEventListener('click', ()=> aviso.remove());
+    aviso.querySelector('.aviso-actualizacion-btn').addEventListener('click', ()=>{
+      const btn = aviso.querySelector('.aviso-actualizacion-btn');
+      btn.textContent = 'Actualizando…';
+      btn.disabled = true;
+      window.__prestayanActualizando = true;
+      const enEspera = registro && registro.waiting;
+      if(enEspera) enEspera.postMessage({ tipo: 'ACTUALIZAR' });
+      else location.reload();
+      setTimeout(()=> location.reload(), 3000); // respaldo
+    });
+  }
+  function registrarAvisoActualizacion(registro){
+    if(!registro) return;
+    const hayAnterior = !!navigator.serviceWorker.controller;
+    if(registro.waiting && hayAnterior) mostrarAvisoActualizacion(registro);
+    registro.addEventListener('updatefound', ()=>{
+      const nuevo = registro.installing;
+      if(!nuevo) return;
+      nuevo.addEventListener('statechange', ()=>{
+        if(nuevo.state === 'installed' && navigator.serviceWorker.controller) mostrarAvisoActualizacion(registro);
+      });
+    });
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(window.__prestayanActualizando){ window.__prestayanActualizando = false; location.reload(); }
+    });
+    // Revisa si hay versión nueva al volver a la app y cada 30 minutos
+    const revisar = ()=>{ try{ registro.update(); }catch(err){} };
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) revisar(); });
+    setInterval(revisar, 30 * 60 * 1000);
+  }
+
   // NUEVO: registra el service worker de la PWA (ver service-worker.js).
   // Falla en silencio si el navegador no lo soporta o si se abre por
   // file:// — no afecta en nada al resto de la app.
   if('serviceWorker' in navigator){
     window.addEventListener('load', ()=>{
-      navigator.serviceWorker.register('service-worker.js').catch(err=>{
+      navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' }).then(registrarAvisoActualizacion).catch(err=>{
         console.warn('No se pudo registrar el service worker (normal si se abre como archivo local):', err);
       });
     });
